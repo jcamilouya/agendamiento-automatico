@@ -4,159 +4,150 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**TURNO** — SaaS de agendamiento para estéticas y barberías colombianas.
-Stack: React 19 + Vite 8 + Tailwind CSS v4 + Supabase + React Router v7 + Recharts + Lucide React.
+**TURNO** — SaaS de agendamiento multi-negocio para estéticas y barberías colombianas.
+Stack: React 19 + Vite 8 + Tailwind CSS v4 + Supabase + React Router v7 + Recharts + Lucide React + vite-plugin-pwa.
 
-Desplegado en producción: `https://agendamiento-five.vercel.app`
+Producción: `https://agendamiento-five.vercel.app`
+Ref Supabase: `teawwzyeybsgpbaezzsh`
 
 ## Commands
 
 ```bash
-npm run dev      # Servidor de desarrollo → http://localhost:5173
+npm run dev      # Dev server → http://localhost:5173
 npm run build    # Build de producción — correr siempre antes de reportar una tarea como terminada
 npm run lint     # ESLint
-npm run preview  # Preview del build de producción
+npm run preview  # Preview del build
 ```
 
 ```bash
-# Re-deploy a Vercel (env vars ya configuradas en el proyecto)
+# Deploy a Vercel
 npx vercel --prod --yes
 
-# Re-deploy Edge Function de WhatsApp (requiere SUPABASE_ACCESS_TOKEN)
+# Deploy Edge Functions (requiere SUPABASE_ACCESS_TOKEN)
 SUPABASE_ACCESS_TOKEN=<pat> npx supabase@latest functions deploy send-whatsapp \
+  --project-ref teawwzyeybsgpbaezzsh --use-api --no-verify-jwt
+
+SUPABASE_ACCESS_TOKEN=<pat> npx supabase@latest functions deploy send-reminders \
+  --project-ref teawwzyeybsgpbaezzsh --use-api --no-verify-jwt
+
+SUPABASE_ACCESS_TOKEN=<pat> npx supabase@latest functions deploy send-waitlist-notify \
   --project-ref teawwzyeybsgpbaezzsh --use-api --no-verify-jwt
 ```
 
 ## Architecture
 
 ### Routing
-`App.jsx` usa React Router v7 (`BrowserRouter`). Rutas activas:
-- `/`          → `LandingPage` (página de ventas SaaS, pública)
-- `/demo`      → `BookingPage` (flujo de agendamiento del cliente, público)
-- `/login`     → `LoginPage` (auth del dueño)
-- `/dashboard` → `DashboardPage` (protegida por `ProtectedRoute`)
+`App.jsx` — React Router v7 (`BrowserRouter`). Rutas activas:
+- `/`           → `LandingPage` (página de ventas SaaS, pública)
+- `/register`   → `RegisterPage` (wizard 4 pasos para nuevos negocios)
+- `/login`      → `LoginPage`
+- `/dashboard`  → `DashboardPage` (protegida por `ProtectedRoute`)
+- `/404`        → `NotFoundPage`
+- `/:shopSlug`  → `BookingPage` (booking público por slug del negocio)
+- `*`           → redirect a `/404`
 
-`ProtectedRoute` (en `App.jsx`) usa `useAuth()` — redirige a `/login` si no hay sesión. Ruta `*` redirige a `/`.
+`ProtectedRoute` usa `useAuth()` — muestra spinner mientras `loading`, redirige a `/login` si no hay sesión.
 
-`src/pages/StylistPage.jsx` — stub vacío (retorna `null`), sin ruta registrada. Reservado para vista pública por estilista.
+### Multi-tenancy
+Cada negocio tiene un `slug` único. El flujo:
+1. Cliente visita `/:shopSlug` → `BookingPage` carga el negocio con `.eq('slug', shopSlug).eq('is_active', true)`. Si no existe, navega a `/404`.
+2. Se aplica `document.documentElement.style.setProperty('--accent', negocio.accent_color)` y `document.title`.
+3. El dashboard carga primero por `owner_id = auth.uid()`. Si no encuentra (usuario demo), cae al slug `'turno-demo'`.
+
+El negocio demo (`turno-demo`) no tiene `owner_id` — así sigue siendo accesible para el usuario demo `admin@turno.co / Turno2024!`.
 
 ### Auth
-`src/hooks/useAuth.js` — expone `{ session, loading, signOut }`.
-- `session` inicia como `undefined` (cargando), luego `null` (sin auth) o el objeto de sesión.
-- Usuario demo: `admin@turno.co` / `Turno2024!`
+`src/hooks/useAuth.js` — expone `{ session, loading, signOut }`. `session` inicia como `undefined` (loading), luego `null` o el objeto sesión.
 
 ### Supabase
-Cliente único en `src/lib/supabase.js`. Credenciales en `.env.local` (gitignoreado) y en Vercel.
+Cliente único en `src/lib/supabase.js`. Credenciales en `.env.local` (gitignoreado) y en Vercel env vars.
 
-Tablas: `businesses`, `stylists`, `services`, `availability`, `appointments`, `time_blocks`.
-- RLS habilitado en todas las tablas; lectura pública para el flujo de booking.
-- `appointments`: INSERT público, UPDATE requiere `auth.role() = 'authenticated'`.
-- El dashboard carga el negocio por `slug = 'turno-demo'` (hardcoded en `DashboardPage`).
+**Tablas:**
+- `businesses` — negocio; columnas clave: `slug`, `owner_id`, `is_active`, `accent_color`, `business_type`, `phone`
+- `stylists`, `services`, `availability`, `time_blocks` — datos del negocio
+- `appointments` — INSERT público, UPDATE requiere auth
+- `clients` — historial agrupado por `(business_id, phone)`; se auto-popula vía trigger en INSERT de appointments
+- `waitlist` — lista de espera; INSERT público desde booking flow
+
+**Migraciones aplicadas:**
+- `supabase/schema.sql` — tablas base + RLS
+- `supabase/seed.sql` — datos demo
+- `supabase/migrations/add_business_columns.sql` — columnas multi-tenancy en `businesses`
+- `supabase/migrations/add_clients_waitlist.sql` — tablas `clients` y `waitlist` + trigger `sync_client_from_appointment`
+
+**Edge Functions** (`supabase/functions/`, runtime Deno):
+- `send-whatsapp` — envía mensaje vía Twilio; secrets: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`
+- `send-reminders` — recordatorios 24h antes; invocar vía cron `0 15 * * *` (10am Colombia)
+- `send-waitlist-notify` — notifica al primero en lista de espera cuando se libera un slot
+
+### Onboarding — `RegisterPage`
+Wizard 4 pasos:
+1. Grid de 5 tipos de negocio (config en `src/config/businessTypes.js`)
+2. Nombre, slug (con preview `turno.co/[slug]` y validación unique en tiempo real), ciudad, WhatsApp
+3. Email + contraseña
+4. Pantalla de éxito con link de booking
+
+Flujo: `supabase.auth.signUp()` → INSERT en `businesses` → redirect `/dashboard`.
+
+`src/config/businessTypes.js` exporta `BUSINESS_TYPES` (objeto) y `BUSINESS_TYPE_LIST` (array). Cada tipo tiene `accentColor`, `staffLabel`, `defaultServices`, etc.
 
 ### Tailwind v4
-Configurado con el plugin de Vite (`@tailwindcss/vite`) — **no hay `tailwind.config.js`**.
-Theme y variables CSS en `src/index.css` dentro de `@theme {}`.
-**Todo CSS de layout responsive va en `src/index.css`, nunca inline en componentes.**
+**No hay `tailwind.config.js`**. Plugin de Vite (`@tailwindcss/vite`). Variables CSS en `src/index.css` dentro de `@theme {}`. Todo CSS responsive va en `src/index.css`, nunca inline en componentes.
 
-### Assets estáticos
-`public/` — servidos en `/` por Vite. Contiene `video_landing.mp4` (hero de la landing), `favicon.svg`, `icons.svg`.
-`src/components/ui/` — no contiene componentes JSX; es almacenamiento alternativo de assets. Preferir `public/` para nuevos assets referenciados desde código.
-
-### Landing page — `LandingPage.jsx`
-Página de ventas en `/`. Secciones: Nav sticky → Hero (video) → Features → How it works → Testimonials → Pricing → CTA band → Footer.
-
-**Hooks propios definidos al tope del archivo (no extraídos):**
-- `useScrollReveal(threshold)` — IntersectionObserver; retorna `[ref, visible]`. Cada sección recibe su propio ref. Los observers se desconectan tras el primer disparo (no hay leak).
-- `useTypewriter(text, speed)` — retorna `[displayed, done]`; anima el título del hero letra por letra.
-- `useAnimatedCounter(target, duration, start)` — rAF con easing cúbico; arranca cuando `start` cambia a `true`.
-
-**Parallax 3D del hero:**
-- `videoRef` + `contentRef` manipulados directamente en un listener de scroll con `{ passive: true }` y rAF-throttle (un solo frame encolado a la vez vía `rafId`).
-- Video: `translate3d(0, scrollY*0.28px, 0) scale(1→1.12)` — parallax + zoom suave.
-- Contenido: `translate3d(0, -scrollY*0.14px, 0)` + `opacity` fade.
-- Ambos con `willChange: 'transform'` para capa GPU dedicada.
-
-**Patrón de scroll reveal en secciones** (Features, HowItWorks, Testimonials, Pricing, CTABand):
-```jsx
-const [ref, visible] = useScrollReveal()
-// En el elemento: opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(30px)'
-// transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms`
-```
-El stagger se logra con `delay` creciente en `ms` por índice de hijo.
-
-**Animación secuencial de pasos (HowItWorks):** `stepGlow 9s ease-in-out infinite` con `animation-delay: 0s, 3s, 6s` — cada paso se ilumina una vez por ciclo, sin solapamiento.
+### PWA
+`vite-plugin-pwa` en `vite.config.js` — estrategia `generateSW`, `registerType: 'autoUpdate'`. Genera `dist/sw.js` y `dist/workbox-*.js`. Iconos en `public/icons/` (SVG 192×192 y 512×512). Manifest en `public/manifest.json` y también inline en `vite.config.js`.
 
 ### Flujo de agendamiento — `BookingPage`
-Orquesta 5 pasos con estado local. Componentes en `src/components/booking/`:
+Orquesta 5 pasos; todos los queries Supabase están en `BookingPage`, los hijos solo reciben props:
 ```
-BookingPage (estado + queries Supabase)
+BookingPage (estado + queries + negocio cargado por useParams)
   ├── PasoServicio     → selección de servicio
-  ├── PasoEstilista    → selección de estilista
-  ├── PasoFechaHora    → calendario + slots disponibles
-  ├── PasoFormulario   → nombre + WhatsApp del cliente
-  └── PasoConfirmacion → resumen; dispara sendWhatsApp() al confirmar
+  ├── PasoEstilista    → "El primero disponible" (llama onSeleccionar(estilistas[0])) + lista
+  ├── PasoFechaHora    → calendario + slots; si slot ocupado muestra botón "Lista de espera"
+  ├── PasoFormulario   → nombre + WhatsApp
+  └── PasoConfirmacion → resumen; confirmarCita() inserta appointment + envía WhatsApp al cliente y al dueño
 ```
 
-**`PasoEstilista`:** la primera tarjeta es siempre "El primero disponible" (ícono `Clock`, fondo mint-suave). Al seleccionarla llama `onSeleccionar(estilistas[0])` — asigna el primer estilista de la lista sin lógica adicional en BookingPage.
-
-**`PasoFechaHora`:** días no disponibles muestran `color: #444444` + `cursor: not-allowed`. Domingos no disponibles muestran tooltip "Cerrado" posicionado absolutamente sobre el botón, controlado por `hoveredDayIdx` state (necesario porque el tooltip es JSX condicional, no pseudo-CSS). La lógica de slots cruza `availability`, `appointments` y `time_blocks`.
+`PasoFechaHora` cruza `availability`, `appointments` y `time_blocks` para generar slots. Domingos muestran tooltip "Cerrado" controlado por `hoveredDayIdx` state. Slots marcados con promos: mañana (9–10am, ámbar) y mediodía (12–13h, morado).
 
 ### Dashboard — `DashboardPage`
-`DashboardPage` es el orquestador principal. **No hacer queries Supabase en los hijos del dashboard**, excepto los paneles marcados como autónomos:
+Orquestador principal. Regla: **no hacer queries Supabase en hijos del dashboard**, excepto los autónomos:
 
-| Componente | Datos | Patrón |
-|---|---|---|
-| `AgendaHoy`, `SemanaResumen`, `KPICard` | reciben props | orquestado por DashboardPage |
-| `CitasPanel` | recibe `citas[]` + callback `onLoad` | DashboardPage ejecuta la query |
-| `EstilistasPanel` | recibe solo `businessId` | autónomo — CRUD + stats propios |
-| `ServiciosPanel` | recibe solo `businessId` | autónomo — CRUD propio |
-| `GraficosPanel` | recibe solo `businessId` | autónomo — sus propias queries por período |
+| Componente | Patrón |
+|---|---|
+| `AgendaHoy`, `SemanaResumen`, `KPICard` | reciben props de DashboardPage |
+| `CitasPanel` | recibe `citas[]` + callback `onLoad` |
+| `EstilistasPanel`, `ServiciosPanel`, `GraficosPanel`, `ClientesPanel` | autónomos — reciben solo `businessId` |
+| `AjustesPanel` | recibe `accentColor`, `widgetOrder` + callbacks |
 
-**Carga en `DashboardPage`:**
-1. Carga `businesses` por slug.
-2. `Promise.all` de 4 queries: citas hoy (con joins), citas semana, próximas 5 citas, estilistas activos.
-3. `buildWeekData(weekAppts)` → array de 7 días para los KPI cards.
-4. `loadAllCitas(filters)` como `useCallback` pasado a `CitasPanel`.
+Carga: negocio por `owner_id` (o slug demo) → `Promise.all` de 4 queries → `buildWeekData()`. `handleStatusChange` actualiza `todayAppts` y `allCitas` optimistamente.
 
-**`handleStatusChange`:** actualiza optimistamente `todayAppts` y `allCitas` con un `patch` fn tras el UPDATE en Supabase.
+`AjustesPanel` — toggle dark/light (clase `theme-light` en `document.documentElement`), selector de acento (5 presets + input custom), widgets arrastrables con HTML5 DnD. Todo persiste en `localStorage`.
+
+`ClientesPanel` — tabla de clientes con visitas e ingresos. Click abre drawer lateral glass con notas privadas (guardadas en `clients.notes`) e historial de citas.
 
 ### Notificaciones — `useNotifications` + `DashHeader`
-`src/hooks/useNotifications.js` — suscripción Supabase Realtime a INSERT en `appointments` (filtro por `business_id`). Cuando llega una cita nueva:
-1. Hace follow-up query para obtener nombre de servicio y estilista.
-2. Llama `playChime()` — chime E5→A5 con Web Audio API (sin archivos externos).
-3. Expone `{ notifications, unreadCount, markAllRead, markRead, dismissToast }`.
+`src/hooks/useNotifications.js` — Supabase Realtime en `appointments` filtrado por `business_id`. Por cada INSERT: follow-up query para nombre de servicio/estilista, chime E5→A5 (Web Audio API, sin archivos), expone `{ notifications, unreadCount, markAllRead, markRead, dismissToast }`.
 
-`DashHeader` implementa: toasts slide-in (`fixed top-20 right-20`, auto-dismiss 5s), dropdown con backdrop transparent, campana con `bellPulse` cuando `unreadCount` sube.
-
-Los helpers `formatDateShort`, `formatHM`, `relativeTime` están exportados desde el hook.
-
-### Reportes — `GraficosPanel`
-Panel autónomo (recibe solo `businessId`). Selector: Esta semana / Últimos 30 días / Últimos 90 días.
-Builders de datos cliente-side: `buildKPIs`, `buildTrend`, `buildServiciosData`, `buildStylistsData`, `buildHorasPico`, `buildEstadoData`, `buildRetencion`.
-
-### Estadísticas de equipo — `EstilistasPanel`
-`load()` en `Promise.all`: estilistas + citas 30 días con `services(price)`. Construye `statsMap: { [stylistId]: { total, completed, ingresos, cancelled } }`. `StylistCard` muestra citas / ingresos / % completadas + barra verde-roja.
+`DashHeader` renderiza toasts (auto-dismiss 5s, animación `toastIn/toastOut`) y dropdown. `bellPulse` cuando sube `unreadCount`. Helpers `formatDateShort`, `formatHM`, `relativeTime` exportados desde el hook.
 
 ### WhatsApp — `src/lib/whatsapp.js`
-- `sendWhatsApp(phone, msg)` — llama Edge Function; falla silenciosamente si no configurada.
-- `whatsAppLink(phone, msg)` — genera `wa.me/57…?text=…` (siempre funciona).
+- `sendWhatsApp(phone, msg)` — fire-and-forget vía Edge Function; falla silenciosamente.
+- `msgConfirmacion` / `msgNuevaCita` / `msgRecordatorio` — templates. `msgNuevaCita` va al dueño (con emoji 🔔).
 - `normalizePhone(raw)` — normaliza a E.164 colombiano (`+57XXXXXXXXXX`).
-- `msgConfirmacion` / `msgRecordatorio` — templates con todos los campos de la cita.
-
-Edge Function en `supabase/functions/send-whatsapp/index.ts` (Deno). Secrets: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`.
 
 ### Despliegue
-Vercel — `vercel.json` con `rewrites` catch-all para SPA routing. Env vars en Vercel: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Credenciales Twilio solo en Supabase (no en Vercel).
+Vercel — `vercel.json` con rewrite catch-all para SPA. Env vars en Vercel: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Credenciales Twilio solo en Supabase Secrets (no en Vercel).
 
 ## Design System — Reglas irrompibles
 
 ### Colores
 ```
-Fondo:        #0A0A0A   (negro profundo)
+Fondo:        #050505   (negro profundo — bg base)
 Surface/cards:#111111
 Bordes:       #1E1E1E
-Mint acento:  #3DFFA8   ← color principal de marca
-Mint oscuro:  #1A5C3A   (hover/bg de badges, números de paso grandes)
+Mint acento:  #00FF88   ← color principal de marca (var --accent, sobreescribible por negocio)
+Mint dim:     #0D3320   (hover/bg de badges)
 Texto:        #F5F5F5
 Texto gris:   #888888
 Error:        #FF4D4D
@@ -164,100 +155,54 @@ Error:        #FF4D4D
 WhatsApp:     #25D366   (solo botones "Recordar")
 ```
 
-### Tipografía
-- Títulos/display: `Syne` (font-weight 700–800)
-- Cuerpo: `DM Sans` (font-weight 400–600)
-- **Nunca** usar Inter, Roboto, Arial ni fuentes del sistema.
-
-### Componentes base
-En la **landing** los estilos van 100% inline. El **booking flow** mezcla inline + clases CSS en `src/index.css`:
+Variables CSS disponibles (en `:root`):
 ```css
-.turno-container    /* wrapper centrado max-width responsive */
-.servicios-grid     /* grid 1→2 cols para cards de servicios */
-.servicio-card      /* card con hover translateY + border mint */
-.paso-animado       /* fadeSlideIn al montar cada paso */
-.slots-grid         /* flex-wrap para botones de hora */
-.slot-btn           /* botón de slot (disabled → opacity 0.4, cursor not-allowed) */
+--accent              /* color de acento del negocio, default #00FF88 */
+--accent-dim          /* fondo de badges mint */
+--accent-glow         /* box-shadow verde suave */
+--glass-bg            /* rgba(255,255,255,0.04) */
+--glass-border        /* rgba(255,255,255,0.08) */
+--glass-shadow        /* sombra de cards glass */
+--glass-blur          /* blur(20px) */
 ```
 
-En el **dashboard** usar las clases reutilizables:
-```css
-.btn-mint          /* botón primario verde */
-.dash-input        /* input/textarea con :focus mint */
-.dash-modal-overlay + .dash-modal  /* modal centrado con backdrop */
-.dash-skeleton     /* shimmer de carga */
-.status-badge.{pending|confirmed|completed|cancelled}
+### Tipografía
+- Títulos/display: `Syne` (700–800)
+- Cuerpo: `DM Sans` (400–600)
+- Nunca Inter, Roboto, Arial ni fuentes del sistema.
+
+### Estilos por contexto
+**Landing** — 100% inline styles.
+**Booking flow** — inline + clases en `src/index.css`:
+```
+.turno-container   .servicios-grid   .servicio-card
+.paso-animado      .slots-grid       .slot-btn
+```
+
+**Dashboard** — clases reutilizables:
+```
+.btn-mint          .dash-input       .dash-modal-overlay + .dash-modal
+.dash-skeleton     .status-badge.{pending|confirmed|completed|cancelled}
 ```
 
 Card base: `background:#111111; border:1px solid #1E1E1E; borderRadius:12px; padding:24px`
 
-### Otras reglas
-- Fondo siempre oscuro, nunca blanco.
-- Border radius: `12px` cards, `8px` inputs/botones, `999px` pills.
-- Iconos: **Lucide React únicamente**.
-- Animaciones scroll: usar el patrón `useScrollReveal` + `opacity/transform transition` (no `animation: fadeInUp` en secciones que entran por scroll).
-- Spinner: `border:2px solid transparent; border-top-color:X; animation:spin 0.7s linear infinite`
-- Hover en botones verdes principales: `scale(1.03) translateY(-2px)` + `box-shadow` verde intensificado.
-
 ### CSS del dashboard (`src/index.css`)
-Layout:
 - `.dash-layout` — grid `240px 1fr`, `height:100vh; overflow:hidden`
 - `.dash-main` — `height:100vh; overflow-y:auto` ← hace que el header sticky funcione
-- `.dash-header` — `position:sticky; top:0` dentro del scroll de `.dash-main`
-- `.kpi-grid` — `repeat(4,1fr)`; 2×2 en tablet y móvil
-- `.report-kpi-grid` — `repeat(4,1fr)`; 2×2 en tablet y móvil (dentro de GraficosPanel)
-
-Tablas/grids:
+- `.kpi-grid` — `repeat(4,1fr)`; 2×2 en tablet/móvil
 - `.citas-grid-row` — 7 cols: `100px 75px 1fr 150px 130px 110px auto`
-- `.servicios-table-row` — 6 cols: `1fr 120px 80px 100px 90px auto`
-- `.estilistas-grid` — 3 cols desktop / 2 tablet / 1 móvil
-- `.graficos-grid` — 2 cols, 1 en tablet y móvil
-- `.citas-row-actions` / `.servicios-row-actions` — `opacity:0`, `1` en hover del row padre
+- `.estilistas-grid` — 3 cols / 2 tablet / 1 móvil
 
-Landing:
-- `.landing-features-grid` — 4 cols / 2 tablet / 1 móvil
-- `.landing-steps-grid` — 3 cols / 1 tablet y móvil
-- `.landing-testimonials-grid` — 3 cols / 1 tablet y móvil
-- `.landing-pricing-grid` — 3 cols / 1 tablet y móvil
+Keyframes: `fadeInUp`, `slideInLeft`, `shimmer`, `spin`, `pulse-dot`, `toastIn`, `toastOut`, `bellPulse`, `float`, `fadeSlideIn`, `stepGlow`, `cursorBlink`
 
-Keyframes disponibles: `fadeInUp`, `slideInLeft`, `shimmer`, `spin`, `pulse-dot`, `toastIn`, `toastOut`, `bellPulse`, `float`, `fadeSlideIn`, `stepGlow`, `cursorBlink`
+**Breakpoints:** `<768px` sidebar→bottom nav / `768–1100px` sidebar 200px / `>1400px` SemanaResumen más ancha
 
-**Breakpoints:** `<768px` sidebar→bottom nav / `768–1100px` sidebar 200px / `>1400px` columna SemanaResumen más ancha
-
-## Fases del proyecto
-
-| Fase | Estado | Descripción |
-|------|--------|-------------|
-| 0 | ✅ | Setup React + Vite + Tailwind + Supabase |
-| 1 | ✅ | Flujo de agendamiento del cliente (5 pasos) |
-| 2 | ✅ | Dashboard del dueño (agenda hoy, citas, gráficos, CRUD estilistas y servicios) |
-| 3 | ✅ | WhatsApp automático con Twilio (Edge Function deployada) |
-| 4 | ✅ | Métricas y reportes avanzados (selector período, 6 gráficas, retención) |
-| 5 | ✅ | Landing page SaaS + despliegue en Vercel |
-| 6 | ✅ | Animaciones landing (scroll reveal, typewriter, parallax 3D video hero, contadores) |
-
-## Supabase — DB setup y RLS
-
-```bash
-# Correr en orden en Supabase SQL Editor:
-# 1. supabase/schema.sql  → tablas + RLS + políticas base
-# 2. supabase/seed.sql    → datos demo (negocio "turno-demo", servicios, estilistas)
-```
-
-Políticas adicionales requeridas:
-```sql
-create policy "owner update appointments"
-  on appointments for update using (auth.role() = 'authenticated');
-
-create policy "owner manage stylists"
-  on stylists for all
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
-
-create policy "owner manage services"
-  on services for all
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
-```
-
-Para notificaciones en tiempo real: tabla `appointments` debe estar en la publicación Realtime (Dashboard → Database → Replication → supabase_realtime → agregar `appointments`).
+### Otras reglas
+- Fondo siempre oscuro; nunca blanco.
+- Border radius: `12px` cards, `8px` inputs/botones, `999px` pills.
+- Iconos: Lucide React únicamente.
+- Scroll reveal: patrón `useScrollReveal` + `opacity/transform transition` (no keyframe `fadeInUp` en secciones de scroll).
+- Spinner: `border:2px solid transparent; border-top-color:X; animation:spin 0.7s linear infinite`
+- Hover botones verdes: `scale(1.03) translateY(-2px)` + `box-shadow` verde intensificado.
+- Cards glass: `backdrop-filter:blur(20px); background:var(--glass-bg); border:1px solid var(--glass-border)`
