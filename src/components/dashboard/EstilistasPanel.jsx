@@ -3,7 +3,7 @@ import { Plus, X, Pencil, Users, TrendingUp } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 const AVATAR_COLORS = [
-  { bg: '#1A5C3A', text: '#3DFFA8' },
+  { bg: '#0D3320', text: '#00FF88' },
   { bg: '#1C1500', text: '#F59E0B' },
   { bg: '#1A0D2E', text: '#A855F7' },
   { bg: '#0D2040', text: '#60A5FA' },
@@ -285,8 +285,8 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
         borderRadius: 10, padding: '12px 14px', marginBottom: 14,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 10 }}>
-          <TrendingUp size={11} color="#3DFFA8" />
-          <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.65rem', color: '#3DFFA8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <TrendingUp size={11} color="#00FF88" />
+          <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.65rem', color: '#00FF88', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             Últimos 30 días
           </span>
         </div>
@@ -300,12 +300,12 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
           <StatMini
             value={formatCOP(stats.ingresos)}
             label="ingresos"
-            color="#3DFFA8"
+            color="#00FF88"
           />
           <StatMini
             value={`${tasaCompl}%`}
             label="completadas"
-            color={tasaCompl >= 70 ? '#3DFFA8' : tasaCompl >= 40 ? '#F59E0B' : '#FF4D4D'}
+            color={tasaCompl >= 70 ? '#00FF88' : tasaCompl >= 40 ? '#F59E0B' : '#FF4D4D'}
           />
         </div>
 
@@ -313,11 +313,11 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
         {stats.total > 0 && (
           <div style={{ marginTop: 10 }}>
             <div style={{ display: 'flex', height: 4, borderRadius: 999, overflow: 'hidden', background: '#1A1A1A', gap: 1 }}>
-              <BarSegment pct={tasaCompl}  color="#3DFFA8" />
+              <BarSegment pct={tasaCompl}  color="#00FF88" />
               <BarSegment pct={tasaCanc}   color="#FF4D4D" />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.6rem', color: '#3DFFA8' }}>
+              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.6rem', color: '#00FF88' }}>
                 {stats.completed} completadas
               </span>
               <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.6rem', color: '#444' }}>
@@ -351,7 +351,7 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
             color: '#888888', fontSize: '0.78rem', fontFamily: 'DM Sans, sans-serif', cursor: 'pointer',
             transition: 'border-color 0.2s, color 0.2s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#3DFFA8'; e.currentTarget.style.color = '#3DFFA8' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88'; e.currentTarget.style.color = '#00FF88' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = '#252525'; e.currentTarget.style.color = '#888888' }}
         >
           <Pencil size={13} /> Editar
@@ -363,7 +363,7 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
             flex: 1, background: 'none',
             border: `1px solid ${stylist.is_active ? 'rgba(255,77,77,0.25)' : 'rgba(61,255,168,0.25)'}`,
             borderRadius: 8, padding: '8px 12px',
-            color: stylist.is_active ? '#FF4D4D' : '#3DFFA8',
+            color: stylist.is_active ? '#FF4D4D' : '#00FF88',
             fontSize: '0.78rem', fontFamily: 'DM Sans, sans-serif',
             cursor: toggling ? 'not-allowed' : 'pointer',
             opacity: toggling ? 0.5 : 1, transition: 'opacity 0.2s',

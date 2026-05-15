@@ -77,7 +77,7 @@ export default function SemanaResumen({ weekAppointments, upcomingAppointments, 
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%',
                   margin: '0 auto 6px',
-                  background: isToday ? '#3DFFA8' : 'transparent',
+                  background: isToday ? '#00FF88' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   border: isToday ? 'none' : '1px solid transparent',
                 }}>
@@ -95,7 +95,7 @@ export default function SemanaResumen({ weekAppointments, upcomingAppointments, 
                   <span style={{
                     display: 'inline-block',
                     background: isToday ? 'rgba(61,255,168,0.15)' : 'rgba(136,136,136,0.1)',
-                    color: isToday ? '#3DFFA8' : '#666666',
+                    color: isToday ? '#00FF88' : '#666666',
                     fontSize: '0.62rem', fontWeight: 700,
                     borderRadius: '999px', padding: '1px 6px',
                     fontFamily: 'DM Sans, sans-serif',
@@ -152,7 +152,7 @@ export default function SemanaResumen({ weekAppointments, upcomingAppointments, 
                   borderRadius: 8, padding: '6px 10px', textAlign: 'center',
                   minWidth: 54, flexShrink: 0,
                 }}>
-                  <p style={{ color: '#3DFFA8', fontSize: '0.68rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }}>
+                  <p style={{ color: '#00FF88', fontSize: '0.68rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }}>
                     {formatFechaProxima(a.date)}
                   </p>
                   <p style={{ color: '#888888', fontSize: '0.65rem', fontFamily: 'DM Sans, sans-serif' }}>

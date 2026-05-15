@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { sendWhatsApp, msgConfirmacion } from '../lib/whatsapp'
+import { sendWhatsApp, msgConfirmacion, msgNuevaCita } from '../lib/whatsapp'
 import PasoServicio from '../components/booking/PasoServicio'
 import PasoEstilista from '../components/booking/PasoEstilista'
 import PasoFechaHora from '../components/booking/PasoFechaHora'
 import PasoFormulario from '../components/booking/PasoFormulario'
 import PasoConfirmacion from '../components/booking/PasoConfirmacion'
 
-const SLUG = 'turno-demo'
 const ETIQUETAS = ['Servicio', 'Estilista', 'Fecha y hora', 'Tus datos']
 
-const s = (obj) => Object.assign({}, obj)
-
 export default function BookingPage() {
+  const { shopSlug } = useParams()
+  const navigate = useNavigate()
+
   const [paso, setPaso] = useState(1)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
@@ -26,14 +27,20 @@ export default function BookingPage() {
     nombre: '', telefono: ''
   })
 
-  useEffect(() => { cargarDatos() }, [])
+  useEffect(() => { cargarDatos() }, [shopSlug])
 
   async function cargarDatos() {
     try {
       const { data: neg, error: e1 } = await supabase
-        .from('businesses').select('*').eq('slug', SLUG).single()
-      if (e1) throw e1
+        .from('businesses').select('*').eq('slug', shopSlug).eq('is_active', true).single()
+      if (e1 || !neg) { navigate('/404', { replace: true }); return }
       setNegocio(neg)
+
+      // Aplica el color de acento y título del negocio
+      if (neg.accent_color) {
+        document.documentElement.style.setProperty('--accent', neg.accent_color)
+      }
+      document.title = `${neg.name} — TURNO`
 
       const { data: srvs, error: e2 } = await supabase
         .from('services').select('*')
@@ -74,14 +81,26 @@ export default function BookingPage() {
       })
       if (err) throw err
 
-      // Confirmación WhatsApp — fire-and-forget, no bloquea el flujo
+      // Confirmación al cliente — fire-and-forget
       sendWhatsApp(telefono, msgConfirmacion({
-        clientName:   nombre,
-        negocioName:  negocio.name,
+        clientName:  nombre,
+        negocioName: negocio.name,
         fecha, hora,
-        servicio:     servicio.name,
-        estilista:    estilista.name,
+        servicio:    servicio.name,
+        estilista:   estilista.name,
       }))
+
+      // Alerta al dueño del negocio
+      if (negocio.phone) {
+        sendWhatsApp(negocio.phone, msgNuevaCita({
+          clientName:  nombre,
+          clientPhone: telefono,
+          fecha, hora,
+          servicio:    servicio.name,
+          estilista:   estilista.name,
+          precio:      servicio.price,
+        }))
+      }
 
       setSeleccion(prev => ({ ...prev, nombre, telefono }))
       setPaso(5)
@@ -121,7 +140,7 @@ export default function BookingPage() {
           <h1 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.4rem', color: '#F5F5F5', margin: 0 }}>
             {negocio.name}
           </h1>
-          <span style={{ background: '#1A5C3A', color: '#3DFFA8', fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}>
+          <span style={{ background: '#0D3320', color: '#00FF88', fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}>
             Abierto
           </span>
         </div>
@@ -134,7 +153,7 @@ export default function BookingPage() {
             {ETIQUETAS.map((_, i) => (
               <div key={i} style={{
                 flex: 1, height: '3px', borderRadius: '999px',
-                background: i + 1 <= paso ? '#3DFFA8' : '#1E1E1E',
+                background: i + 1 <= paso ? '#00FF88' : '#1E1E1E',
                 transition: 'background 0.3s ease'
               }} />
             ))}

@@ -49,14 +49,26 @@ export function msgRecordatorio({ clientName, negocioName, fecha, hora, servicio
   return [
     `Hola ${nombre} 👋`,
     ``,
-    `Te recordamos tu cita en *${negocioName}*:`,
+    `Te recordamos tu cita mañana en *${negocioName}*:`,
     ``,
     `📅 ${formatFechaLinda(fecha)}`,
     `🕐 ${formatHora(hora)}`,
     `✂️ ${servicio} con ${estilista}`,
     ``,
-    `¿Confirmas tu asistencia? Responde *SÍ* o *NO*.`,
+    `¿Todo bien? Si necesitas cancelar o cambiar la hora, solo dinos 🙌`,
   ].join('\n')
+}
+
+export function msgNuevaCita({ clientName, clientPhone, fecha, hora, servicio, estilista, precio }) {
+  return [
+    `🔔 *Nueva cita agendada*`,
+    ``,
+    `👤 ${clientName}`,
+    `📱 ${clientPhone}`,
+    `📅 ${formatFechaLinda(fecha)} a las ${formatHora(hora)}`,
+    `✂️ ${servicio} con ${estilista}`,
+    precio ? `💰 $${Number(precio).toLocaleString('es-CO')}` : '',
+  ].filter(Boolean).join('\n')
 }
 
 // ── Envío automático vía Edge Function ───────────────────────

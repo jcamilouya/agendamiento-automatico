@@ -1,11 +1,13 @@
-import { LayoutDashboard, Calendar, Users, Scissors, BarChart2, LogOut } from 'lucide-react'
+import { LayoutDashboard, Calendar, Users, Scissors, BarChart2, LogOut, Settings, UserCircle } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { id: 'inicio',     label: 'Inicio',      Icon: LayoutDashboard },
-  { id: 'citas',      label: 'Citas',       Icon: Calendar        },
-  { id: 'estilistas', label: 'Estilistas',  Icon: Users           },
-  { id: 'servicios',  label: 'Servicios',   Icon: Scissors        },
-  { id: 'reportes',   label: 'Reportes',    Icon: BarChart2       },
+  { id: 'inicio',     label: 'Inicio',         Icon: LayoutDashboard },
+  { id: 'citas',      label: 'Citas',          Icon: Calendar        },
+  { id: 'clientes',   label: 'Clientes',       Icon: UserCircle      },
+  { id: 'estilistas', label: 'Estilistas',     Icon: Users           },
+  { id: 'servicios',  label: 'Servicios',      Icon: Scissors        },
+  { id: 'reportes',   label: 'Reportes',       Icon: BarChart2       },
+  { id: 'ajustes',    label: 'Personalizar',   Icon: Settings        },
 ]
 
 export default function DashSidebar({ activeSection, onNavigate, negocio, onSignOut, userEmail }) {
@@ -22,7 +24,7 @@ export default function DashSidebar({ activeSection, onNavigate, negocio, onSign
           </span>
           <span style={{
             width: 8, height: 8, borderRadius: '50%',
-            background: '#3DFFA8', flexShrink: 0,
+            background: '#00FF88', flexShrink: 0,
             animation: 'pulse-dot 2s ease-in-out infinite',
             boxShadow: '0 0 8px rgba(61,255,168,0.5)',
           }} />

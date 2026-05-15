@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { CalendarX, X, MessageCircle } from 'lucide-react'
 import { whatsAppLink, msgRecordatorio } from '../../lib/whatsapp'
+import { supabase } from '../../lib/supabase'
 
 const STATUS_OPTIONS = [
   { value: 'all',       label: 'Todos los estados' },
@@ -18,7 +19,7 @@ const STATUS_LABELS = {
 }
 
 const AVATAR_COLORS = [
-  { bg: '#1A5C3A', text: '#3DFFA8' },
+  { bg: '#0D3320', text: '#00FF88' },
   { bg: '#1C1500', text: '#F59E0B' },
   { bg: '#1A0D2E', text: '#A855F7' },
   { bg: '#0D2040', text: '#60A5FA' },
@@ -84,6 +85,23 @@ export default function CitasPanel({ citas, loading, stylists, negocioName, onLo
   async function handleAction(id, newStatus) {
     setUpdatingId(id)
     await onStatusChange(id, newStatus)
+
+    // Si se canceló, notificar al primero en lista de espera
+    if (newStatus === 'cancelled') {
+      const cita = citas.find(c => c.id === id)
+      if (cita) {
+        supabase.functions.invoke('send-waitlist-notify', {
+          body: {
+            businessId:  cita.business_id,
+            stylistId:   cita.stylist_id,
+            date:        cita.date,
+            startTime:   cita.start_time,
+            serviceName: cita.services?.name ?? 'el servicio',
+          }
+        }).catch(() => {}) // fire-and-forget
+      }
+    }
+
     setUpdatingId(null)
   }
 
@@ -262,7 +280,7 @@ function CitaRow({ cita, index, negocioName, updating, onAction }) {
       </span>
 
       {/* Hora */}
-      <span style={{ color: '#3DFFA8', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 700 }}>
+      <span style={{ color: '#00FF88', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 700 }}>
         {formatHora(cita.start_time)}
       </span>
 
@@ -318,7 +336,7 @@ function CitaRow({ cita, index, negocioName, updating, onAction }) {
         {updating ? (
           <div style={{
             width: 16, height: 16, borderRadius: '50%',
-            border: '2px solid transparent', borderTopColor: '#3DFFA8',
+            border: '2px solid transparent', borderTopColor: '#00FF88',
             animation: 'spin 0.7s linear infinite',
           }} />
         ) : (
@@ -331,7 +349,7 @@ function CitaRow({ cita, index, negocioName, updating, onAction }) {
               />
             )}
             {cita.status === 'pending' && (
-              <ActionBtn label="Confirmar" color="#3DFFA8" bg="rgba(61,255,168,0.1)" border="rgba(61,255,168,0.3)" onClick={() => onAction(cita.id, 'confirmed')} />
+              <ActionBtn label="Confirmar" color="#00FF88" bg="rgba(61,255,168,0.1)" border="rgba(61,255,168,0.3)" onClick={() => onAction(cita.id, 'confirmed')} />
             )}
             {cita.status === 'confirmed' && (
               <ActionBtn label="Completar" color="#AAAAAA" bg="rgba(136,136,136,0.1)" border="rgba(136,136,136,0.3)" onClick={() => onAction(cita.id, 'completed')} />

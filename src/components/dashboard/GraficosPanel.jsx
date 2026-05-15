@@ -164,7 +164,7 @@ function buildEstadoData(data) {
     total:    data.length,
     statuses: [
       { label: 'Pendientes',  value: data.filter(a => a.status === 'pending').length,   color: '#F59E0B' },
-      { label: 'Confirmadas', value: data.filter(a => a.status === 'confirmed').length,  color: '#3DFFA8' },
+      { label: 'Confirmadas', value: data.filter(a => a.status === 'confirmed').length,  color: '#00FF88' },
       { label: 'Completadas', value: data.filter(a => a.status === 'completed').length,  color: '#888888' },
       { label: 'Canceladas',  value: data.filter(a => a.status === 'cancelled').length,  color: '#FF4D4D' },
     ],
@@ -370,7 +370,7 @@ export default function GraficosPanel({ businessId }) {
               onClick={() => setPeriod(p.key)}
               style={{
                 padding: '6px 14px', borderRadius: 7, border: 'none',
-                background: period === p.key ? '#3DFFA8' : 'transparent',
+                background: period === p.key ? '#00FF88' : 'transparent',
                 color: period === p.key ? '#0A0A0A' : '#888888',
                 fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem',
                 fontWeight: period === p.key ? 700 : 400,
@@ -385,7 +385,7 @@ export default function GraficosPanel({ businessId }) {
 
       {/* KPI mini-cards */}
       <div className="report-kpi-grid" style={{ marginBottom: 24 }}>
-        <MiniKPI label="Ingresos del período"   value={formatCOP(kpis.ingresos)}      color="#3DFFA8" />
+        <MiniKPI label="Ingresos del período"   value={formatCOP(kpis.ingresos)}      color="#00FF88" />
         <MiniKPI label="Ticket promedio"         value={formatCOP(kpis.ticket)}        sub={`${kpis.completedCount} completadas`} />
         <MiniKPI label="Total citas"             value={String(kpis.total)} />
         <MiniKPI
@@ -416,14 +416,14 @@ export default function GraficosPanel({ businessId }) {
               <Tooltip
                 {...tooltipStyle}
                 formatter={v => [v + ' citas', '']}
-                itemStyle={{ color: '#3DFFA8' }}
+                itemStyle={{ color: '#00FF88' }}
               />
               <Bar dataKey="citas" radius={[5,5,0,0]} maxBarSize={32} animationDuration={900} animationEasing="ease-out">
                 {trendData.map((_, i) => (
                   <Cell
                     key={i}
-                    fill={period === 'week' && i === todayIdx ? '#3DFFA8' : '#1E2A22'}
-                    stroke={period === 'week' && i === todayIdx ? '#3DFFA8' : 'transparent'}
+                    fill={period === 'week' && i === todayIdx ? '#00FF88' : '#1E2A22'}
+                    stroke={period === 'week' && i === todayIdx ? '#00FF88' : 'transparent'}
                   />
                 ))}
               </Bar>
@@ -486,7 +486,7 @@ export default function GraficosPanel({ businessId }) {
                 label={s.nombre}
                 value={s.citas}
                 max={maxServicio}
-                color="#3DFFA8"
+                color="#00FF88"
                 delay={300 + i * 80}
                 sub={formatCOP(s.ingresos) + ' generados'}
               />
@@ -541,7 +541,7 @@ export default function GraficosPanel({ businessId }) {
               <Tooltip
                 {...tooltipStyle}
                 formatter={v => [v + ' citas', '']}
-                itemStyle={{ color: '#3DFFA8' }}
+                itemStyle={{ color: '#00FF88' }}
               />
               <Bar dataKey="citas" radius={[4,4,0,0]} maxBarSize={22} animationDuration={900} animationEasing="ease-out">
                 {horasPico.map((h, i) => {
@@ -549,8 +549,8 @@ export default function GraficosPanel({ businessId }) {
                   return (
                     <Cell
                       key={i}
-                      fill={isMax ? '#3DFFA8' : '#1E2A22'}
-                      stroke={isMax ? '#3DFFA8' : 'transparent'}
+                      fill={isMax ? '#00FF88' : '#1E2A22'}
+                      stroke={isMax ? '#00FF88' : 'transparent'}
                     />
                   )
                 })}
@@ -601,7 +601,7 @@ export default function GraficosPanel({ businessId }) {
               <p style={{ color: '#555555', fontSize: '0.68rem', fontFamily: 'DM Sans, sans-serif', marginBottom: 4 }}>
                 Nuevos
               </p>
-              <p style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.5rem', color: '#3DFFA8' }}>
+              <p style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.5rem', color: '#00FF88' }}>
                 {retencion.nuevos}
               </p>
             </div>

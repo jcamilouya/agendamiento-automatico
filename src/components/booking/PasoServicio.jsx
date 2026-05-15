@@ -7,9 +7,9 @@ const ICONO_CATEGORIA = {
 }
 
 const COLOR_CATEGORIA = {
-  'Cortes':  { bg: '#0D2B1A', text: '#3DFFA8', border: '#1A5C3A' },
-  'Combos':  { bg: '#1A1A0D', text: '#FFD700', border: '#4A4A00' },
-  'Barba':   { bg: '#1A0D1A', text: '#C084FC', border: '#4C1D95' },
+  'Cortes':  { bg: 'rgba(0,255,136,0.08)',   text: '#00FF88', border: 'rgba(0,255,136,0.2)' },
+  'Combos':  { bg: 'rgba(251,191,36,0.08)',  text: '#FBBF24', border: 'rgba(251,191,36,0.2)' },
+  'Barba':   { bg: 'rgba(192,132,252,0.08)', text: '#C084FC', border: 'rgba(192,132,252,0.2)' },
 }
 
 function IconoCategoria({ categoria }) {
@@ -39,7 +39,7 @@ export default function PasoServicio({ servicios, onSeleccionar }) {
 
       <div className="servicios-grid">
         {servicios.map(srv => {
-          const col = COLOR_CATEGORIA[srv.category] || { bg: '#1A1A1A', text: '#3DFFA8', border: '#2A2A2A' }
+          const col = COLOR_CATEGORIA[srv.category] || { bg: '#1A1A1A', text: '#00FF88', border: '#2A2A2A' }
           return (
             <button
               key={srv.id}
@@ -62,7 +62,7 @@ export default function PasoServicio({ servicios, onSeleccionar }) {
                     </span>
                   )}
                 </div>
-                <ChevronRight size={16} color="#3DFFA8" style={{ opacity: 0.6 }} />
+                <ChevronRight size={16} color="#00FF88" style={{ opacity: 0.6 }} />
               </div>
 
               {/* Nombre */}
@@ -91,7 +91,7 @@ export default function PasoServicio({ servicios, onSeleccionar }) {
                   <Clock size={13} />
                   <span>{srv.duration_minutes} min</span>
                 </div>
-                <span style={{ color: '#3DFFA8', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'Syne, sans-serif' }}>
+                <span style={{ color: '#00FF88', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'Syne, sans-serif' }}>
                   ${Number(srv.price).toLocaleString('es-CO')}
                 </span>
               </div>

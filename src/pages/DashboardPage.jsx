@@ -12,8 +12,10 @@ import GraficosPanel from '../components/dashboard/GraficosPanel'
 import CitasPanel       from '../components/dashboard/CitasPanel'
 import EstilistasPanel from '../components/dashboard/EstilistasPanel'
 import ServiciosPanel  from '../components/dashboard/ServiciosPanel'
+import AjustesPanel    from '../components/dashboard/AjustesPanel'
+import ClientesPanel   from '../components/dashboard/ClientesPanel'
 
-const SLUG = 'turno-demo'
+const DEMO_SLUG = 'turno-demo'
 
 function toYMD(d) {
   return d.toISOString().split('T')[0]
@@ -66,6 +68,37 @@ export default function DashboardPage() {
   const [allCitas,       setAllCitas]       = useState([])
   const [allCitasLoading,setAllCitasLoading]= useState(false)
   const [activeSection,  setActiveSection]  = useState('inicio')
+  const [theme,          setTheme]          = useState(() => localStorage.getItem('turno-theme') || 'dark')
+  const [accentColor,    setAccentColor]    = useState(() => localStorage.getItem('turno-accent') || '#00FF88')
+  const [widgetOrder,    setWidgetOrder]    = useState(() => {
+    try { return JSON.parse(localStorage.getItem('turno-widgets')) || ['kpis','agenda','graficos'] }
+    catch { return ['kpis','agenda','graficos'] }
+  })
+
+  // Aplica el tema al documento
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.classList.add('theme-light')
+    } else {
+      document.documentElement.classList.remove('theme-light')
+    }
+    localStorage.setItem('turno-theme', theme)
+  }, [theme])
+
+  function toggleTheme() {
+    setTheme(t => t === 'dark' ? 'light' : 'dark')
+  }
+
+  function handleAccentChange(color) {
+    setAccentColor(color)
+    localStorage.setItem('turno-accent', color)
+    document.documentElement.style.setProperty('--accent', color)
+  }
+
+  function handleWidgetOrderChange(order) {
+    setWidgetOrder(order)
+    localStorage.setItem('turno-widgets', JSON.stringify(order))
+  }
 
   useEffect(() => {
     if (!session) return
@@ -79,9 +112,23 @@ export default function DashboardPage() {
       const mon   = getMonday(new Date())
       const sun   = getSunday(new Date())
 
-      const { data: neg, error: negError } = await supabase
-        .from('businesses').select('*').eq('slug', SLUG).single()
-      if (negError) throw negError
+      // Primero intenta cargar el negocio del usuario autenticado,
+      // si no tiene (demo), cae al slug fijo
+      let neg = null
+      const { data: ownBiz } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('owner_id', session.user.id)
+        .single()
+
+      if (ownBiz) {
+        neg = ownBiz
+      } else {
+        const { data: demoBiz, error: negError } = await supabase
+          .from('businesses').select('*').eq('slug', DEMO_SLUG).single()
+        if (negError) throw negError
+        neg = demoBiz
+      }
       setNegocio(neg)
 
       const [todayRes, weekRes, upcomingRes, stylistsRes] = await Promise.all([
@@ -184,7 +231,7 @@ export default function DashboardPage() {
   const weekData = buildWeekData(weekAppts)
   const statusData = [
     { label: 'Pendientes',  value: todayAppts.filter(a => a.status === 'pending').length,   color: '#F59E0B' },
-    { label: 'Confirmadas', value: todayAppts.filter(a => a.status === 'confirmed').length,  color: '#3DFFA8' },
+    { label: 'Confirmadas', value: todayAppts.filter(a => a.status === 'confirmed').length,  color: '#00FF88' },
     { label: 'Completadas', value: todayAppts.filter(a => a.status === 'completed').length,  color: '#888888' },
     { label: 'Canceladas',  value: todayAppts.filter(a => a.status === 'cancelled').length,  color: '#FF4D4D' },
   ]
@@ -200,11 +247,11 @@ export default function DashboardPage() {
       />
 
       <main className="dash-main">
-        <DashHeader negocio={negocio} pendingCount={pendingCount} />
+        <DashHeader negocio={negocio} pendingCount={pendingCount} theme={theme} onThemeToggle={toggleTheme} />
 
         <div style={{ padding: '28px 32px' }}>
           {/* KPI Cards — siempre visibles */}
-          <div className="kpi-grid" style={{ marginBottom: 28 }}>
+          <div className="kpi-grid widget-0" style={{ marginBottom: 28 }}>
             <KPICard icon={Calendar}   label="Citas hoy"    value={dataLoading ? '—' : String(todayAppts.length)} delay={0} />
             <KPICard icon={DollarSign} label="Ingresos hoy" value={dataLoading ? '—' : formatCOP(revenueHoy)} sublabel="completadas" delay={100} />
             <KPICard icon={Clock}      label="Pendientes"   value={dataLoading ? '—' : String(pendingCount)} delay={200} pulse={!dataLoading && pendingCount > 0} />
@@ -221,15 +268,24 @@ export default function DashboardPage() {
               onLoad={loadAllCitas}
               onStatusChange={handleStatusChange}
             />
+          ) : activeSection === 'clientes' ? (
+            <ClientesPanel businessId={negocio?.id} />
           ) : activeSection === 'estilistas' ? (
             <EstilistasPanel businessId={negocio?.id} />
           ) : activeSection === 'servicios' ? (
             <ServiciosPanel businessId={negocio?.id} />
           ) : activeSection === 'reportes' ? (
             <GraficosPanel businessId={negocio?.id} />
+          ) : activeSection === 'ajustes' ? (
+            <AjustesPanel
+              accentColor={accentColor}
+              onAccentChange={handleAccentChange}
+              widgetOrder={widgetOrder}
+              onWidgetOrderChange={handleWidgetOrderChange}
+            />
           ) : (
             <div
-              className="dash-content-grid"
+              className="dash-content-grid widget-1"
               style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24, alignItems: 'start' }}
             >
               <AgendaHoy

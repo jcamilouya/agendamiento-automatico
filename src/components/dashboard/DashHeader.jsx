@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Bell, X, CheckCheck, Calendar, Clock } from 'lucide-react'
+import { Bell, X, CheckCheck, Calendar, Clock, Sun, Moon } from 'lucide-react'
 import { useNotifications, formatDateShort, formatHM, relativeTime } from '../../hooks/useNotifications'
 
 const DIAS   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
@@ -32,7 +32,7 @@ function NotifToast({ notif, onDismiss }) {
       style={{
         background: '#141414',
         border: '1px solid #1E1E1E',
-        borderLeft: '3px solid #3DFFA8',
+        borderLeft: '3px solid #00FF88',
         borderRadius: 12,
         padding: '14px 16px',
         marginBottom: 10,
@@ -49,13 +49,13 @@ function NotifToast({ notif, onDismiss }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           <span style={{
             width: 7, height: 7, borderRadius: '50%',
-            background: '#3DFFA8',
-            boxShadow: '0 0 6px #3DFFA8',
+            background: '#00FF88',
+            boxShadow: '0 0 6px #00FF88',
             flexShrink: 0,
           }} />
           <span style={{
             fontFamily: 'Syne, sans-serif', fontWeight: 700,
-            fontSize: '0.82rem', color: '#3DFFA8',
+            fontSize: '0.82rem', color: '#00FF88',
           }}>
             Nueva cita
           </span>
@@ -115,8 +115,8 @@ function NotifItem({ notif, onRead }) {
     >
       <span style={{
         width: 7, height: 7, borderRadius: '50%', flexShrink: 0, marginTop: 5,
-        background: notif.read ? '#2A2A2A' : '#3DFFA8',
-        boxShadow: notif.read ? 'none' : '0 0 5px #3DFFA8',
+        background: notif.read ? '#2A2A2A' : '#00FF88',
+        boxShadow: notif.read ? 'none' : '0 0 5px #00FF88',
       }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 3 }}>
@@ -187,7 +187,7 @@ function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose 
             </span>
             {unreadCount > 0 && (
               <span style={{
-                background: '#3DFFA8', color: '#0A0A0A',
+                background: '#00FF88', color: '#0A0A0A',
                 fontSize: '0.6rem', fontWeight: 700,
                 borderRadius: 999, padding: '1px 6px',
                 fontFamily: 'DM Sans, sans-serif',
@@ -206,7 +206,7 @@ function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose 
                 fontFamily: 'DM Sans, sans-serif', cursor: 'pointer',
                 transition: 'color 0.2s',
               }}
-              onMouseEnter={e => e.currentTarget.style.color = '#3DFFA8'}
+              onMouseEnter={e => e.currentTarget.style.color = '#00FF88'}
               onMouseLeave={e => e.currentTarget.style.color = '#555'}
             >
               <CheckCheck size={13} /> Marcar leídas
@@ -251,9 +251,10 @@ function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose 
 
 // ── Header principal ──────────────────────────────────────────────────────────
 
-export default function DashHeader({ negocio, pendingCount }) {
+export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle }) {
   const [open, setOpen] = useState(false)
   const bellRef         = useRef(null)
+  const isLight         = theme === 'light'
 
   const { notifications, unreadCount, markAllRead, markRead, dismissToast } =
     useNotifications(negocio?.id)
@@ -301,31 +302,51 @@ export default function DashHeader({ negocio, pendingCount }) {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Toggle dark/light */}
+          <button
+            onClick={onThemeToggle}
+            title={isLight ? 'Modo oscuro' : 'Modo claro'}
+            style={{
+              background: isLight ? 'rgba(0,0,0,0.06)' : '#1A1A1A',
+              border: `1px solid ${isLight ? 'rgba(0,0,0,0.1)' : '#252525'}`,
+              borderRadius: 10, padding: 10, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = isLight ? 'rgba(0,0,0,0.1)' : '#252525' }}
+          >
+            {isLight
+              ? <Moon size={18} color="#555" />
+              : <Sun  size={18} color="#888" />
+            }
+          </button>
+
           {/* Campana */}
           <div ref={bellRef} style={{ position: 'relative' }}>
             <button
               onClick={() => setOpen(o => !o)}
               style={{
                 background: open ? '#1E2A1E' : '#1A1A1A',
-                border: `1px solid ${open ? '#3DFFA8' : unreadCount > 0 ? 'rgba(61,255,168,0.4)' : '#252525'}`,
+                border: `1px solid ${open ? '#00FF88' : unreadCount > 0 ? 'rgba(61,255,168,0.4)' : '#252525'}`,
                 borderRadius: 10, padding: 10, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.2s ease',
                 animation: pulse ? 'bellPulse 0.6s ease' : 'none',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#3DFFA8' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88' }}
               onMouseLeave={e => {
                 if (!open) e.currentTarget.style.borderColor = unreadCount > 0 ? 'rgba(61,255,168,0.4)' : '#252525'
               }}
             >
-              <Bell size={18} color={unreadCount > 0 ? '#3DFFA8' : '#888888'} />
+              <Bell size={18} color={unreadCount > 0 ? '#00FF88' : '#888888'} />
             </button>
 
             {/* Badge */}
             {unreadCount > 0 && (
               <span style={{
                 position: 'absolute', top: -5, right: -5,
-                background: '#3DFFA8', color: '#0A0A0A',
+                background: '#00FF88', color: '#0A0A0A',
                 fontSize: '0.58rem', fontWeight: 800,
                 borderRadius: 999, padding: '2px 5px',
                 fontFamily: 'DM Sans, sans-serif',
@@ -370,7 +391,7 @@ export default function DashHeader({ negocio, pendingCount }) {
             border: '1px solid rgba(61,255,168,0.25)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: 'Syne, sans-serif', fontWeight: 700,
-            fontSize: '0.85rem', color: '#3DFFA8', flexShrink: 0,
+            fontSize: '0.85rem', color: '#00FF88', flexShrink: 0,
           }}>
             {negocio ? getInitials(negocio.name) : '?'}
           </div>

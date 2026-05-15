@@ -313,7 +313,7 @@ function ServiceRow({ service, index, toggling, onEdit, onToggle }) {
 
       {/* Precio */}
       <span style={{
-        color: '#3DFFA8', fontSize: '0.88rem',
+        color: '#00FF88', fontSize: '0.88rem',
         fontFamily: 'DM Sans, sans-serif', fontWeight: 700,
       }}>
         {formatCOP(service.price)}
@@ -336,7 +336,7 @@ function ServiceRow({ service, index, toggling, onEdit, onToggle }) {
             background: 'none', color: '#888888',
             transition: 'border-color 0.15s, color 0.15s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#3DFFA8'; e.currentTarget.style.color = '#3DFFA8' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88'; e.currentTarget.style.color = '#00FF88' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = '#252525'; e.currentTarget.style.color = '#888888' }}
         >
           <Pencil size={12} /> Editar
@@ -350,7 +350,7 @@ function ServiceRow({ service, index, toggling, onEdit, onToggle }) {
             cursor: toggling ? 'not-allowed' : 'pointer',
             fontFamily: 'DM Sans, sans-serif', fontWeight: 600,
             background: 'none',
-            color: service.is_active ? '#FF4D4D' : '#3DFFA8',
+            color: service.is_active ? '#FF4D4D' : '#00FF88',
             opacity: toggling ? 0.5 : 1,
             transition: 'opacity 0.15s',
           }}

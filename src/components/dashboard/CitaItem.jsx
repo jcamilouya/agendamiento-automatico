@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react'
 import { whatsAppLink, msgRecordatorio } from '../../lib/whatsapp'
 
 const AVATAR_COLORS = [
-  { bg: '#1A5C3A', text: '#3DFFA8' },
+  { bg: '#0D3320', text: '#00FF88' },
   { bg: '#1C1500', text: '#F59E0B' },
   { bg: '#1A0D2E', text: '#A855F7' },
   { bg: '#0D2040', text: '#60A5FA' },
@@ -65,7 +65,7 @@ export default function CitaItem({ cita, index, negocioName, onStatusChange }) {
       {/* Hora */}
       <div style={{ width: 68, flexShrink: 0 }}>
         <p style={{
-          color: '#3DFFA8', fontWeight: 700,
+          color: '#00FF88', fontWeight: 700,
           fontSize: '0.85rem', fontFamily: 'DM Sans, sans-serif',
           lineHeight: 1.2,
         }}>
@@ -137,7 +137,7 @@ export default function CitaItem({ cita, index, negocioName, onStatusChange }) {
               style={{
                 ...actionBtnBase,
                 background: 'rgba(61,255,168,0.1)',
-                color: '#3DFFA8',
+                color: '#00FF88',
                 border: '1px solid rgba(61,255,168,0.3)',
               }}
             >

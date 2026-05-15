@@ -35,7 +35,7 @@ export default function PasoFormulario({ seleccion, guardando, onConfirmar, onVo
 
   const inputBase = (error, focus) => ({
     width: '100%', background: '#0A0A0A',
-    border: `1px solid ${error ? '#FF4D4D' : focus ? '#3DFFA8' : '#1E1E1E'}`,
+    border: `1px solid ${error ? '#FF4D4D' : focus ? '#00FF88' : '#1E1E1E'}`,
     borderRadius: '8px', padding: '13px 16px',
     color: '#F5F5F5', fontSize: '0.9rem',
     fontFamily: 'DM Sans, sans-serif',
@@ -63,7 +63,7 @@ export default function PasoFormulario({ seleccion, guardando, onConfirmar, onVo
           { lbl: 'Servicio', val: servicio.name, color: '#F5F5F5' },
           { lbl: 'Estilista', val: estilista.name, color: '#F5F5F5' },
           { lbl: 'Fecha',    val: fechaLinda,    color: '#F5F5F5' },
-          { lbl: 'Hora',     val: formatHora(hora), color: '#3DFFA8' },
+          { lbl: 'Hora',     val: formatHora(hora), color: '#00FF88' },
         ].map(({ lbl, val, color }) => (
           <div key={lbl} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
             <span style={{ color: '#888888', fontSize: '0.8rem' }}>{lbl}</span>
@@ -105,7 +105,7 @@ export default function PasoFormulario({ seleccion, guardando, onConfirmar, onVo
           type="submit"
           disabled={guardando}
           style={{
-            background: guardando ? '#1A5C3A' : '#3DFFA8',
+            background: guardando ? '#0D3320' : '#00FF88',
             color: '#0A0A0A', border: 'none', borderRadius: '8px',
             padding: '14px', fontWeight: 700, fontSize: '1rem',
             cursor: guardando ? 'not-allowed' : 'pointer',
