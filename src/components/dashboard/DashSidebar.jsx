@@ -15,9 +15,9 @@ function getInitials(name = '') {
   return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || 'T'
 }
 
-export default function DashSidebar({ activeSection, onNavigate, negocio, onSignOut, userEmail }) {
+export default function DashSidebar({ activeSection, onNavigate, negocio, onSignOut, userEmail, accentColor }) {
   const initials    = getInitials(negocio?.name)
-  const accent      = negocio?.accent_color ?? '#00FF88'
+  const accent      = accentColor ?? negocio?.accent_color ?? '#00FF88'
   const [copied, setCopied] = useState(false)
 
   function copyLink() {

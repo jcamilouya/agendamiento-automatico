@@ -3,7 +3,7 @@ import { Plus, X, Pencil, Users, TrendingUp, Upload, Camera } from 'lucide-react
 import { supabase } from '../../lib/supabase'
 
 const AVATAR_COLORS = [
-  { bg: '#0D3320', text: '#00FF88' },
+  { bg: '#0D3320', text: 'var(--accent)' },
   { bg: '#1C1500', text: '#F59E0B' },
   { bg: '#1A0D2E', text: '#A855F7' },
   { bg: '#0D2040', text: '#60A5FA' },
@@ -230,7 +230,7 @@ export default function EstilistasPanel({ businessId }) {
                     border: '1px dashed #2A2A2A', background: '#0A0A0A',
                     transition: 'border-color 0.2s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = '#00FF88'}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                   onMouseLeave={e => e.currentTarget.style.borderColor = '#2A2A2A'}
                 >
                   {form.photo_url ? (
@@ -241,7 +241,7 @@ export default function EstilistasPanel({ businessId }) {
                     </div>
                   )}
                   <div>
-                    <p style={{ color: form.photo_url ? '#00FF88' : '#555', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', margin: 0 }}>
+                    <p style={{ color: form.photo_url ? 'var(--accent)' : '#555', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', margin: 0 }}>
                       {form.photo_url ? 'Foto cargada ✓' : 'Subir foto desde PC'}
                     </p>
                     <p style={{ color: '#3A3A3A', fontSize: '0.72rem', fontFamily: 'DM Sans, sans-serif', margin: '2px 0 0' }}>
@@ -372,7 +372,7 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
           <StatMini
             value={`${tasaCompl}%`}
             label="completadas"
-            color={tasaCompl >= 70 ? '#00FF88' : tasaCompl >= 40 ? '#F59E0B' : '#FF4D4D'}
+            color={tasaCompl >= 70 ? 'var(--accent)' : tasaCompl >= 40 ? '#F59E0B' : '#FF4D4D'}
           />
         </div>
 
@@ -418,7 +418,7 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
             color: '#888888', fontSize: '0.78rem', fontFamily: 'DM Sans, sans-serif', cursor: 'pointer',
             transition: 'border-color 0.2s, color 0.2s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88'; e.currentTarget.style.color = '#00FF88' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = '#252525'; e.currentTarget.style.color = '#888888' }}
         >
           <Pencil size={13} /> Editar
@@ -428,9 +428,9 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
           disabled={toggling}
           style={{
             flex: 1, background: 'none',
-            border: `1px solid ${stylist.is_active ? 'rgba(255,77,77,0.25)' : 'rgba(61,255,168,0.25)'}`,
+            border: `1px solid ${stylist.is_active ? 'rgba(255,77,77,0.25)' : 'rgba(var(--accent-rgb),0.25)'}`,
             borderRadius: 8, padding: '8px 12px',
-            color: stylist.is_active ? '#FF4D4D' : '#00FF88',
+            color: stylist.is_active ? '#FF4D4D' : 'var(--accent)',
             fontSize: '0.78rem', fontFamily: 'DM Sans, sans-serif',
             cursor: toggling ? 'not-allowed' : 'pointer',
             opacity: toggling ? 0.5 : 1, transition: 'opacity 0.2s',

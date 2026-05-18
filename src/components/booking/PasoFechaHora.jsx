@@ -205,7 +205,7 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
                   disabled={!disp}
                   style={{
                     width: '100%',
-                    background: sel ? '#00FF88' : 'transparent',
+                    background: sel ? 'var(--accent)' : 'transparent',
                     color: sel ? '#0A0A0A' : disp ? '#F5F5F5' : '#444444',
                     border: 'none',
                     borderRadius: '8px', padding: '9px 4px',
@@ -213,7 +213,7 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
                     fontSize: '0.875rem', fontWeight: sel ? 700 : 400,
                     transition: 'all 0.15s ease',
                     fontFamily: 'DM Sans, sans-serif',
-                    boxShadow: sel ? '0 0 16px rgba(61,255,168,0.35)' : 'none',
+                    boxShadow: sel ? '0 0 16px rgba(var(--accent-rgb),0.35)' : 'none',
                   }}
                   onMouseEnter={e => {
                     if (disp && !sel) e.currentTarget.style.background = '#1E1E1E'
@@ -294,8 +294,8 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
                     style={{ background: bgColor, border: `1px solid ${borderColor}`, color: textColor }}
                     onMouseEnter={e => {
                       if (!slot.disponible) return
-                      e.currentTarget.style.borderColor = '#00FF88'
-                      e.currentTarget.style.color = '#00FF88'
+                      e.currentTarget.style.borderColor = 'var(--accent)'
+                      e.currentTarget.style.color = 'var(--accent)'
                       e.currentTarget.style.boxShadow = '0 0 16px rgba(var(--accent-rgb),0.15)'
                     }}
                     onMouseLeave={e => {

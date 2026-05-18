@@ -20,7 +20,7 @@ export default function PasoConfirmacion({ seleccion, negocio, onReiniciar }) {
       <div style={{ marginBottom: '28px' }}>
         <CheckCircle
           size={64} color="var(--accent)"
-          style={{ margin: '0 auto 16px', filter: 'drop-shadow(0 0 20px rgba(61,255,168,0.4))' }}
+          style={{ margin: '0 auto 16px', filter: 'drop-shadow(0 0 20px rgba(var(--accent-rgb),0.4))' }}
         />
         <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.8rem', color: '#F5F5F5', marginBottom: '8px' }}>
           ¡Cita confirmada!
@@ -70,7 +70,7 @@ export default function PasoConfirmacion({ seleccion, negocio, onReiniciar }) {
           fontFamily: 'DM Sans, sans-serif', fontSize: '0.875rem',
           transition: 'all 0.2s ease'
         }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88'; e.currentTarget.style.color = '#F5F5F5' }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = '#F5F5F5' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = '#1E1E1E'; e.currentTarget.style.color = '#888888' }}
       >
         Agendar otra cita

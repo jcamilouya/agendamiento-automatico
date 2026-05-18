@@ -257,6 +257,7 @@ export default function DashboardPage() {
         negocio={negocio}
         onSignOut={handleSignOut}
         userEmail={session?.user?.email}
+        accentColor={accentColor}
       />
 
       <main className="dash-main">

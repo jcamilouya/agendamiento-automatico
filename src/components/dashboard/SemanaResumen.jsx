@@ -77,7 +77,7 @@ export default function SemanaResumen({ weekAppointments, upcomingAppointments, 
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%',
                   margin: '0 auto 6px',
-                  background: isToday ? '#00FF88' : 'transparent',
+                  background: isToday ? 'var(--accent)' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   border: isToday ? 'none' : '1px solid transparent',
                 }}>
@@ -94,8 +94,8 @@ export default function SemanaResumen({ weekAppointments, upcomingAppointments, 
                 ) : count > 0 ? (
                   <span style={{
                     display: 'inline-block',
-                    background: isToday ? 'rgba(61,255,168,0.15)' : 'rgba(136,136,136,0.1)',
-                    color: isToday ? '#00FF88' : '#666666',
+                    background: isToday ? 'rgba(var(--accent-rgb),0.15)' : 'rgba(136,136,136,0.1)',
+                    color: isToday ? 'var(--accent)' : '#666666',
                     fontSize: '0.62rem', fontWeight: 700,
                     borderRadius: '999px', padding: '1px 6px',
                     fontFamily: 'DM Sans, sans-serif',

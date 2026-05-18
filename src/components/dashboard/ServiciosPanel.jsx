@@ -258,7 +258,7 @@ export default function ServiciosPanel({ businessId }) {
                     border: '1px dashed #2A2A2A', background: '#0A0A0A',
                     transition: 'border-color 0.2s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = '#00FF88'}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                   onMouseLeave={e => e.currentTarget.style.borderColor = '#2A2A2A'}
                 >
                   {form.photo_url ? (
@@ -269,7 +269,7 @@ export default function ServiciosPanel({ businessId }) {
                     </div>
                   )}
                   <div>
-                    <p style={{ color: form.photo_url ? '#00FF88' : '#555', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', margin: 0 }}>
+                    <p style={{ color: form.photo_url ? 'var(--accent)' : '#555', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', margin: 0 }}>
                       {form.photo_url ? 'Foto cargada ✓' : 'Subir foto desde PC'}
                     </p>
                     <p style={{ color: '#3A3A3A', fontSize: '0.72rem', fontFamily: 'DM Sans, sans-serif', margin: '2px 0 0' }}>
@@ -402,7 +402,7 @@ function ServiceRow({ service, index, toggling, onEdit, onToggle }) {
             background: 'none', color: '#888888',
             transition: 'border-color 0.15s, color 0.15s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88'; e.currentTarget.style.color = '#00FF88' }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = '#252525'; e.currentTarget.style.color = '#888888' }}
         >
           <Pencil size={12} /> Editar
@@ -411,12 +411,12 @@ function ServiceRow({ service, index, toggling, onEdit, onToggle }) {
           onClick={onToggle}
           disabled={toggling}
           style={{
-            border: `1px solid ${service.is_active ? 'rgba(255,77,77,0.25)' : 'rgba(61,255,168,0.25)'}`,
+            border: `1px solid ${service.is_active ? 'rgba(255,77,77,0.25)' : 'rgba(var(--accent-rgb),0.25)'}`,
             borderRadius: 6, padding: '4px 10px', fontSize: '0.72rem',
             cursor: toggling ? 'not-allowed' : 'pointer',
             fontFamily: 'DM Sans, sans-serif', fontWeight: 600,
             background: 'none',
-            color: service.is_active ? '#FF4D4D' : '#00FF88',
+            color: service.is_active ? '#FF4D4D' : 'var(--accent)',
             opacity: toggling ? 0.5 : 1,
             transition: 'opacity 0.15s',
           }}

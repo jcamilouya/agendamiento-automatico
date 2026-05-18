@@ -7,7 +7,7 @@ const ICONO_CATEGORIA = {
 }
 
 const COLOR_CATEGORIA = {
-  'Cortes':  { bg: 'rgba(var(--accent-rgb),0.08)',   text: '#00FF88', border: 'rgba(var(--accent-rgb),0.2)' },
+  'Cortes':  { bg: 'rgba(var(--accent-rgb),0.08)',   text: 'var(--accent)', border: 'rgba(var(--accent-rgb),0.2)' },
   'Combos':  { bg: 'rgba(251,191,36,0.08)',  text: '#FBBF24', border: 'rgba(251,191,36,0.2)' },
   'Barba':   { bg: 'rgba(192,132,252,0.08)', text: '#C084FC', border: 'rgba(192,132,252,0.2)' },
 }
@@ -39,7 +39,7 @@ export default function PasoServicio({ servicios, onSeleccionar }) {
 
       <div className="servicios-grid">
         {servicios.map(srv => {
-          const col = COLOR_CATEGORIA[srv.category] || { bg: '#1A1A1A', text: '#00FF88', border: '#2A2A2A' }
+          const col = COLOR_CATEGORIA[srv.category] || { bg: '#1A1A1A', text: 'var(--accent)', border: '#2A2A2A' }
           return (
             <button
               key={srv.id}

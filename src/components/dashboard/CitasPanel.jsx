@@ -19,7 +19,7 @@ const STATUS_LABELS = {
 }
 
 const AVATAR_COLORS = [
-  { bg: '#0D3320', text: '#00FF88' },
+  { bg: '#0D3320', text: 'var(--accent)' },
   { bg: '#1C1500', text: '#F59E0B' },
   { bg: '#1A0D2E', text: '#A855F7' },
   { bg: '#0D2040', text: '#60A5FA' },
@@ -349,7 +349,7 @@ function CitaRow({ cita, index, negocioName, updating, onAction }) {
               />
             )}
             {cita.status === 'pending' && (
-              <ActionBtn label="Confirmar" color="var(--accent)" bg="rgba(61,255,168,0.1)" border="rgba(61,255,168,0.3)" onClick={() => onAction(cita.id, 'confirmed')} />
+              <ActionBtn label="Confirmar" color="var(--accent)" bg="rgba(var(--accent-rgb),0.1)" border="rgba(var(--accent-rgb),0.3)" onClick={() => onAction(cita.id, 'confirmed')} />
             )}
             {cita.status === 'confirmed' && (
               <ActionBtn label="Completar" color="#AAAAAA" bg="rgba(136,136,136,0.1)" border="rgba(136,136,136,0.3)" onClick={() => onAction(cita.id, 'completed')} />

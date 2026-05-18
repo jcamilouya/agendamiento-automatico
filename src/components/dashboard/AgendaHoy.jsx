@@ -26,7 +26,7 @@ function formatHora(timeStr) {
 // Color y glow de cada estado
 function slotStyle(status, esProxima) {
   if (esProxima) return { bg: '#F59E0B', glow: 'rgba(245,158,11,0.5)', pulse: true }
-  if (status === 'confirmed')  return { bg: '#00FF88', glow: 'rgba(var(--accent-rgb),0.4)', pulse: false }
+  if (status === 'confirmed')  return { bg: 'var(--accent)', glow: 'rgba(var(--accent-rgb),0.4)', pulse: false }
   if (status === 'completed')  return { bg: '#444444', glow: 'transparent', pulse: false }
   if (status === 'cancelled')  return { bg: '#FF4D4D', glow: 'rgba(255,77,77,0.3)', pulse: false }
   return { bg: '#F59E0B', glow: 'rgba(245,158,11,0.35)', pulse: false } // pending

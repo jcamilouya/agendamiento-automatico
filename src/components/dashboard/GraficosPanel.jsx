@@ -27,7 +27,7 @@ const tooltipStyle = {
     borderRadius: 8, fontFamily: 'DM Sans, sans-serif', fontSize: 13,
   },
   labelStyle: { color: '#F5F5F5', fontWeight: 600 },
-  cursor: { fill: 'rgba(61,255,168,0.04)' },
+  cursor: { fill: 'rgba(var(--accent-rgb),0.04)' },
 }
 
 // ── Date range ────────────────────────────────────────────────────────────────
@@ -370,7 +370,7 @@ export default function GraficosPanel({ businessId }) {
               onClick={() => setPeriod(p.key)}
               style={{
                 padding: '6px 14px', borderRadius: 7, border: 'none',
-                background: period === p.key ? '#00FF88' : 'transparent',
+                background: period === p.key ? 'var(--accent)' : 'transparent',
                 color: period === p.key ? '#0A0A0A' : '#888888',
                 fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem',
                 fontWeight: period === p.key ? 700 : 400,
@@ -422,8 +422,8 @@ export default function GraficosPanel({ businessId }) {
                 {trendData.map((_, i) => (
                   <Cell
                     key={i}
-                    fill={period === 'week' && i === todayIdx ? '#00FF88' : '#1E2A22'}
-                    stroke={period === 'week' && i === todayIdx ? '#00FF88' : 'transparent'}
+                    fill={period === 'week' && i === todayIdx ? 'var(--accent)' : '#1E2A22'}
+                    stroke={period === 'week' && i === todayIdx ? 'var(--accent)' : 'transparent'}
                   />
                 ))}
               </Bar>
@@ -549,8 +549,8 @@ export default function GraficosPanel({ businessId }) {
                   return (
                     <Cell
                       key={i}
-                      fill={isMax ? '#00FF88' : '#1E2A22'}
-                      stroke={isMax ? '#00FF88' : 'transparent'}
+                      fill={isMax ? 'var(--accent)' : '#1E2A22'}
+                      stroke={isMax ? 'var(--accent)' : 'transparent'}
                     />
                   )
                 })}

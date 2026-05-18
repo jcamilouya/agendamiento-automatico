@@ -153,7 +153,7 @@ export default function BookingPage() {
             {ETIQUETAS.map((_, i) => (
               <div key={i} style={{
                 flex: 1, height: '3px', borderRadius: '999px',
-                background: i + 1 <= paso ? '#00FF88' : '#1E1E1E',
+                background: i + 1 <= paso ? 'var(--accent)' : '#1E1E1E',
                 transition: 'background 0.3s ease'
               }} />
             ))}

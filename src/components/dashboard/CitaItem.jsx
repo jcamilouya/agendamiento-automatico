@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react'
 import { whatsAppLink, msgRecordatorio } from '../../lib/whatsapp'
 
 const AVATAR_COLORS = [
-  { bg: '#0D3320', text: '#00FF88' },
+  { bg: '#0D3320', text: 'var(--accent)' },
   { bg: '#1C1500', text: '#F59E0B' },
   { bg: '#1A0D2E', text: '#A855F7' },
   { bg: '#0D2040', text: '#60A5FA' },
@@ -136,9 +136,9 @@ export default function CitaItem({ cita, index, negocioName, onStatusChange }) {
               onClick={() => handleAction('confirmed')}
               style={{
                 ...actionBtnBase,
-                background: 'rgba(61,255,168,0.1)',
+                background: 'rgba(var(--accent-rgb),0.1)',
                 color: 'var(--accent)',
-                border: '1px solid rgba(61,255,168,0.3)',
+                border: '1px solid rgba(var(--accent-rgb),0.3)',
               }}
             >
               Confirmar

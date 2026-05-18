@@ -36,7 +36,7 @@ export default function LoginPage() {
   const inputStyle = (focused, hasError) => ({
     width: '100%',
     background: '#0A0A0A',
-    border: `1px solid ${hasError ? '#FF4D4D' : focused ? '#00FF88' : '#1E1E1E'}`,
+    border: `1px solid ${hasError ? '#FF4D4D' : focused ? 'var(--accent)' : '#1E1E1E'}`,
     borderRadius: 8,
     padding: '13px 16px',
     color: '#F5F5F5',
@@ -92,7 +92,7 @@ export default function LoginPage() {
               width: 10, height: 10, borderRadius: '50%',
               background: 'var(--accent)', display: 'inline-block',
               animation: 'pulse-dot 2s ease-in-out infinite',
-              boxShadow: '0 0 10px rgba(61,255,168,0.5)',
+              boxShadow: '0 0 10px rgba(var(--accent-rgb),0.5)',
             }} />
           </div>
           <p style={{ color: '#888888', fontSize: '0.875rem', fontFamily: 'DM Sans, sans-serif' }}>
@@ -161,7 +161,7 @@ export default function LoginPage() {
             disabled={submitting}
             style={{
               marginTop: 8,
-              background: submitting ? '#0D3320' : '#00FF88',
+              background: submitting ? '#0D3320' : 'var(--accent)',
               color: '#0A0A0A', fontWeight: 700,
               fontFamily: 'DM Sans, sans-serif',
               fontSize: '0.95rem',

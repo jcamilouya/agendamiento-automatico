@@ -70,7 +70,7 @@ function NotifToast({ notif, onDismiss }) {
         {/* Glow superior */}
         <div style={{
           height: 2,
-          background: 'linear-gradient(90deg, transparent, #00FF88, transparent)',
+          background: 'linear-gradient(90deg, transparent, var(--accent), transparent)',
         }} />
 
         <div style={{ padding: '28px 28px 20px' }}>
@@ -83,7 +83,7 @@ function NotifToast({ notif, onDismiss }) {
             }}>
               <span style={{
                 width: 7, height: 7, borderRadius: '50%',
-                background: 'var(--accent)', boxShadow: '0 0 8px #00FF88',
+                background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)',
                 animation: 'pulse-dot 1.2s ease-in-out infinite',
               }} />
               <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '0.06em' }}>
@@ -157,7 +157,7 @@ function NotifToast({ notif, onDismiss }) {
         <div style={{ height: 3, background: '#1A1A1A' }}>
           <div style={{
             height: '100%', width: `${progress}%`,
-            background: 'linear-gradient(90deg, #00FF88, #00CC66)',
+            background: 'var(--accent)',
             transition: 'width 0.1s linear',
           }} />
         </div>
@@ -176,17 +176,17 @@ function NotifItem({ notif, onRead }) {
         padding: '14px 16px',
         borderBottom: '1px solid #161616',
         cursor: 'pointer',
-        background: notif.read ? 'transparent' : 'rgba(61,255,168,0.03)',
+        background: notif.read ? 'transparent' : 'rgba(var(--accent-rgb),0.03)',
         transition: 'background 0.15s ease',
         display: 'flex', gap: 10, alignItems: 'flex-start',
       }}
       onMouseEnter={e => { e.currentTarget.style.background = '#161616' }}
-      onMouseLeave={e => { e.currentTarget.style.background = notif.read ? 'transparent' : 'rgba(61,255,168,0.03)' }}
+      onMouseLeave={e => { e.currentTarget.style.background = notif.read ? 'transparent' : 'rgba(var(--accent-rgb),0.03)' }}
     >
       <span style={{
         width: 7, height: 7, borderRadius: '50%', flexShrink: 0, marginTop: 5,
-        background: notif.read ? '#2A2A2A' : '#00FF88',
-        boxShadow: notif.read ? 'none' : '0 0 5px #00FF88',
+        background: notif.read ? '#2A2A2A' : 'var(--accent)',
+        boxShadow: notif.read ? 'none' : '0 0 5px var(--accent)',
       }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 3 }}>
@@ -276,7 +276,7 @@ function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose 
                 fontFamily: 'DM Sans, sans-serif', cursor: 'pointer',
                 transition: 'color 0.2s',
               }}
-              onMouseEnter={e => e.currentTarget.style.color = '#00FF88'}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
               onMouseLeave={e => e.currentTarget.style.color = '#555'}
             >
               <CheckCheck size={13} /> Marcar leídas
@@ -383,7 +383,7 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'all 0.3s ease',
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = isLight ? 'rgba(0,0,0,0.1)' : '#252525' }}
           >
             {isLight
@@ -398,18 +398,18 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
               onClick={() => setOpen(o => !o)}
               style={{
                 background: open ? '#1E2A1E' : '#1A1A1A',
-                border: `1px solid ${open ? '#00FF88' : unreadCount > 0 ? 'rgba(61,255,168,0.4)' : '#252525'}`,
+                border: `1px solid ${open ? 'var(--accent)' : unreadCount > 0 ? 'rgba(var(--accent-rgb),0.4)' : '#252525'}`,
                 borderRadius: 10, padding: 10, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.2s ease',
                 animation: pulse ? 'bellPulse 0.6s ease' : 'none',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
               onMouseLeave={e => {
-                if (!open) e.currentTarget.style.borderColor = unreadCount > 0 ? 'rgba(61,255,168,0.4)' : '#252525'
+                if (!open) e.currentTarget.style.borderColor = unreadCount > 0 ? 'rgba(var(--accent-rgb),0.4)' : '#252525'
               }}
             >
-              <Bell size={18} color={unreadCount > 0 ? '#00FF88' : '#888888'} />
+              <Bell size={18} color={unreadCount > 0 ? 'var(--accent)' : '#888888'} />
             </button>
 
             {/* Badge */}
@@ -457,8 +457,8 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
           {/* Avatar del negocio */}
           <div style={{
             width: 38, height: 38, borderRadius: '50%',
-            background: 'rgba(61,255,168,0.12)',
-            border: '1px solid rgba(61,255,168,0.25)',
+            background: 'rgba(var(--accent-rgb),0.12)',
+            border: '1px solid rgba(var(--accent-rgb),0.25)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: 'Syne, sans-serif', fontWeight: 700,
             fontSize: '0.85rem', color: 'var(--accent)', flexShrink: 0,

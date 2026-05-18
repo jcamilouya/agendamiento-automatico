@@ -154,7 +154,7 @@ function ClientDrawer({ cliente, businessId, onClose }) {
                       <p style={{ color: '#555', fontSize: '0.72rem' }}>{formatFecha(a.date)}</p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <p style={{ color: a.status === 'completed' ? '#00FF88' : a.status === 'cancelled' ? '#FF4D4D' : '#F59E0B', fontSize: '0.72rem', fontWeight: 600 }}>
+                      <p style={{ color: a.status === 'completed' ? 'var(--accent)' : a.status === 'cancelled' ? '#FF4D4D' : '#F59E0B', fontSize: '0.72rem', fontWeight: 600 }}>
                         {a.status === 'completed' ? 'Completada' : a.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}
                       </p>
                       {a.status === 'completed' && a.services?.price && (
