@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
@@ -55,7 +55,7 @@ export default function LoginPage() {
       {/* Orbs de fondo */}
       <div style={{
         position: 'absolute', width: 500, height: 500,
-        borderRadius: '50%', background: '#00FF88',
+        borderRadius: '50%', background: 'var(--accent)',
         filter: 'blur(100px)', opacity: 0.05,
         top: '-100px', left: '-150px',
         animation: 'float 9s ease-in-out infinite alternate',
@@ -63,7 +63,7 @@ export default function LoginPage() {
       }} />
       <div style={{
         position: 'absolute', width: 400, height: 400,
-        borderRadius: '50%', background: '#00FF88',
+        borderRadius: '50%', background: 'var(--accent)',
         filter: 'blur(100px)', opacity: 0.04,
         bottom: '-80px', right: '-100px',
         animation: 'float 11s ease-in-out infinite alternate-reverse',
@@ -90,7 +90,7 @@ export default function LoginPage() {
             </span>
             <span style={{
               width: 10, height: 10, borderRadius: '50%',
-              background: '#00FF88', display: 'inline-block',
+              background: 'var(--accent)', display: 'inline-block',
               animation: 'pulse-dot 2s ease-in-out infinite',
               boxShadow: '0 0 10px rgba(61,255,168,0.5)',
             }} />
@@ -190,7 +190,7 @@ export default function LoginPage() {
           fontFamily: 'DM Sans, sans-serif',
         }}>
           ¿Eres cliente?{' '}
-          <a href="/" style={{ color: '#00FF88', textDecoration: 'none' }}>
+          <a href="/" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
             Agenda tu cita aquí
           </a>
         </p>
@@ -198,3 +198,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

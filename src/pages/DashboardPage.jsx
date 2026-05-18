@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Calendar, DollarSign, Clock, TrendingUp } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -89,11 +89,24 @@ export default function DashboardPage() {
     setTheme(t => t === 'dark' ? 'light' : 'dark')
   }
 
+  function applyAccentVars(color) {
+    const r = parseInt(color.slice(1, 3), 16)
+    const g = parseInt(color.slice(3, 5), 16)
+    const b = parseInt(color.slice(5, 7), 16)
+    document.documentElement.style.setProperty('--accent', color)
+    document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`)
+    document.documentElement.style.setProperty('--accent-dim', `rgba(${r},${g},${b},0.12)`)
+    document.documentElement.style.setProperty('--accent-glow', `0 0 20px rgba(${r},${g},${b},0.3), 0 0 60px rgba(${r},${g},${b},0.1)`)
+  }
+
   function handleAccentChange(color) {
     setAccentColor(color)
     localStorage.setItem('turno-accent', color)
-    document.documentElement.style.setProperty('--accent', color)
+    applyAccentVars(color)
   }
+
+  // Aplica accent al montar (desde localStorage)
+  useEffect(() => { applyAccentVars(accentColor) }, [])
 
   function handleWidgetOrderChange(order) {
     setWidgetOrder(order)
@@ -231,7 +244,7 @@ export default function DashboardPage() {
   const weekData = buildWeekData(weekAppts)
   const statusData = [
     { label: 'Pendientes',  value: todayAppts.filter(a => a.status === 'pending').length,   color: '#F59E0B' },
-    { label: 'Confirmadas', value: todayAppts.filter(a => a.status === 'confirmed').length,  color: '#00FF88' },
+    { label: 'Confirmadas', value: todayAppts.filter(a => a.status === 'confirmed').length,  color: 'var(--accent)' },
     { label: 'Completadas', value: todayAppts.filter(a => a.status === 'completed').length,  color: '#888888' },
     { label: 'Canceladas',  value: todayAppts.filter(a => a.status === 'cancelled').length,  color: '#FF4D4D' },
   ]
@@ -372,3 +385,4 @@ export default function DashboardPage() {
     </div>
   )
 }
+

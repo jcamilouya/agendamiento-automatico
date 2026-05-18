@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react'
+﻿import { useState, useRef } from 'react'
 import { Palette, GripVertical, LayoutDashboard, Calendar, BarChart2 } from 'lucide-react'
 import { BUSINESS_TYPE_LIST } from '../../config/businessTypes'
 
 const ACCENT_PRESETS = [
-  { color: '#00FF88', label: 'Verde eléctrico (TURNO)' },
+  { color: 'var(--accent)', label: 'Verde eléctrico (TURNO)' },
   { color: '#FF6B9D', label: 'Rosa (salón de belleza)' },
   { color: '#C084FC', label: 'Morado (nail studio)' },
   { color: '#34D399', label: 'Esmeralda (spa)' },
@@ -153,11 +153,11 @@ export default function AjustesPanel({ accentColor, onAccentChange, widgetOrder,
                   display: 'flex', alignItems: 'center', gap: '12px',
                   padding: '14px 16px',
                   background: isDrag
-                    ? 'rgba(0,255,136,0.08)'
+                    ? 'rgba(var(--accent-rgb),0.08)'
                     : isOver
                     ? 'rgba(255,255,255,0.07)'
                     : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${isDrag ? 'rgba(0,255,136,0.3)' : isOver ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.07)'}`,
+                  border: `1px solid ${isDrag ? 'rgba(var(--accent-rgb),0.3)' : isOver ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.07)'}`,
                   borderRadius: '10px',
                   cursor: 'grab',
                   transition: 'all 0.15s ease',
@@ -185,3 +185,4 @@ export default function AjustesPanel({ accentColor, onAccentChange, widgetOrder,
     </div>
   )
 }
+

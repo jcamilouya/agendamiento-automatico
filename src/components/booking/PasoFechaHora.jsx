@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
@@ -256,7 +256,7 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
             </div>
           ))}
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00FF88' }} />
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)' }} />
             <span style={{ color: '#666666', fontSize: '0.72rem' }}>Disponible</span>
           </div>
         </div>
@@ -296,7 +296,7 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
                       if (!slot.disponible) return
                       e.currentTarget.style.borderColor = '#00FF88'
                       e.currentTarget.style.color = '#00FF88'
-                      e.currentTarget.style.boxShadow = '0 0 16px rgba(0,255,136,0.15)'
+                      e.currentTarget.style.boxShadow = '0 0 16px rgba(var(--accent-rgb),0.15)'
                     }}
                     onMouseLeave={e => {
                       if (!slot.disponible) return
@@ -337,8 +337,8 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
               <button
                 onClick={() => setMostrarWaitlist(true)}
                 style={{
-                  background: 'rgba(0,255,136,0.08)', color: '#00FF88',
-                  border: '1px solid rgba(0,255,136,0.25)', borderRadius: '10px',
+                  background: 'rgba(var(--accent-rgb),0.08)', color: 'var(--accent)',
+                  border: '1px solid rgba(var(--accent-rgb),0.25)', borderRadius: '10px',
                   padding: '10px 20px', cursor: 'pointer',
                   fontWeight: 600, fontSize: '0.85rem',
                   fontFamily: 'DM Sans, sans-serif',
@@ -355,11 +355,11 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
           {mostrarWaitlist && !waitOk && (
             <div style={{
               marginTop: '20px',
-              background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.15)',
+              background: 'rgba(var(--accent-rgb),0.04)', border: '1px solid rgba(var(--accent-rgb),0.15)',
               borderRadius: '12px', padding: '20px',
               animation: 'fadeSlideIn 0.25s ease',
             }}>
-              <p style={{ color: '#00FF88', fontWeight: 600, fontSize: '0.88rem', marginBottom: '4px' }}>
+              <p style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '0.88rem', marginBottom: '4px' }}>
                 Lista de espera
               </p>
               <p style={{ color: '#666666', fontSize: '0.78rem', marginBottom: '16px' }}>
@@ -387,7 +387,7 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
                     disabled={waitGuardando || !waitNombre || !waitTelefono}
                     style={{
                       flex: 1, padding: '12px', borderRadius: '8px',
-                      background: '#00FF88', color: '#050505',
+                      background: 'var(--accent)', color: '#050505',
                       border: 'none', cursor: 'pointer',
                       fontWeight: 700, fontSize: '0.88rem',
                       fontFamily: 'DM Sans, sans-serif',
@@ -416,12 +416,12 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
           {waitOk && (
             <div style={{
               marginTop: '20px', textAlign: 'center',
-              background: 'rgba(0,255,136,0.06)', border: '1px solid rgba(0,255,136,0.2)',
+              background: 'rgba(var(--accent-rgb),0.06)', border: '1px solid rgba(var(--accent-rgb),0.2)',
               borderRadius: '12px', padding: '20px',
               animation: 'fadeSlideIn 0.25s ease',
             }}>
               <p style={{ fontSize: '1.5rem', marginBottom: '8px' }}>🎉</p>
-              <p style={{ color: '#00FF88', fontWeight: 700, marginBottom: '4px' }}>
+              <p style={{ color: 'var(--accent)', fontWeight: 700, marginBottom: '4px' }}>
                 ¡Listo! Ya estás en la lista
               </p>
               <p style={{ color: '#666666', fontSize: '0.8rem' }}>
@@ -434,3 +434,4 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
     </div>
   )
 }
+

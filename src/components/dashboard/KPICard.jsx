@@ -1,4 +1,4 @@
-function PulseDot() {
+﻿function PulseDot() {
   return (
     <span style={{
       width: 8, height: 8, borderRadius: '50%',
@@ -17,7 +17,7 @@ export default function KPICard({ icon: Icon, label, value, sublabel, delay = 0,
           background: '#1A1A1A', borderRadius: 10, padding: 10,
           border: '1px solid #252525',
         }}>
-          <Icon size={20} color="#00FF88" />
+          <Icon size={20} color="var(--accent)" />
         </div>
         {pulse && <PulseDot />}
       </div>
@@ -31,10 +31,11 @@ export default function KPICard({ icon: Icon, label, value, sublabel, delay = 0,
         {label}
       </p>
       {sublabel && (
-        <p style={{ color: '#00FF88', fontSize: '0.7rem', marginTop: 4, fontFamily: 'DM Sans, sans-serif' }}>
+        <p style={{ color: 'var(--accent)', fontSize: '0.7rem', marginTop: 4, fontFamily: 'DM Sans, sans-serif' }}>
           {sublabel}
         </p>
       )}
     </div>
   )
 }
+

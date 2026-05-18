@@ -1,4 +1,4 @@
-import { Clock, Scissors, Zap, Wind, Star, ChevronRight } from 'lucide-react'
+﻿import { Clock, Scissors, Zap, Wind, Star, ChevronRight } from 'lucide-react'
 
 const ICONO_CATEGORIA = {
   'Cortes': Scissors,
@@ -7,7 +7,7 @@ const ICONO_CATEGORIA = {
 }
 
 const COLOR_CATEGORIA = {
-  'Cortes':  { bg: 'rgba(0,255,136,0.08)',   text: '#00FF88', border: 'rgba(0,255,136,0.2)' },
+  'Cortes':  { bg: 'rgba(var(--accent-rgb),0.08)',   text: '#00FF88', border: 'rgba(var(--accent-rgb),0.2)' },
   'Combos':  { bg: 'rgba(251,191,36,0.08)',  text: '#FBBF24', border: 'rgba(251,191,36,0.2)' },
   'Barba':   { bg: 'rgba(192,132,252,0.08)', text: '#C084FC', border: 'rgba(192,132,252,0.2)' },
 }
@@ -62,7 +62,7 @@ export default function PasoServicio({ servicios, onSeleccionar }) {
                     </span>
                   )}
                 </div>
-                <ChevronRight size={16} color="#00FF88" style={{ opacity: 0.6 }} />
+                <ChevronRight size={16} color="var(--accent)" style={{ opacity: 0.6 }} />
               </div>
 
               {/* Nombre */}
@@ -91,7 +91,7 @@ export default function PasoServicio({ servicios, onSeleccionar }) {
                   <Clock size={13} />
                   <span>{srv.duration_minutes} min</span>
                 </div>
-                <span style={{ color: '#00FF88', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'Syne, sans-serif' }}>
+                <span style={{ color: 'var(--accent)', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'Syne, sans-serif' }}>
                   ${Number(srv.price).toLocaleString('es-CO')}
                 </span>
               </div>
@@ -102,3 +102,4 @@ export default function PasoServicio({ servicios, onSeleccionar }) {
     </div>
   )
 }
+

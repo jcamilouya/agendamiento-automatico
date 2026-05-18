@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Calendar, MessageCircle, BarChart2, Users,
@@ -80,7 +80,7 @@ function Nav() {
     }}>
       <span style={{
         fontFamily: 'Syne, sans-serif', fontWeight: 800,
-        fontSize: '1.3rem', color: '#00FF88', letterSpacing: '-0.02em',
+        fontSize: '1.3rem', color: 'var(--accent)', letterSpacing: '-0.02em',
       }}>
         TURNO
       </span>
@@ -103,7 +103,7 @@ function Nav() {
         <button
           onClick={() => navigate('/turno-demo')}
           style={{
-            background: '#00FF88', border: 'none',
+            background: 'var(--accent)', border: 'none',
             color: '#0A0A0A', padding: '8px 20px',
             borderRadius: 8, fontFamily: 'DM Sans, sans-serif',
             fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
@@ -245,7 +245,7 @@ function Hero() {
           animation: 'fadeInUp 0.5s ease forwards',
           backdropFilter: 'blur(8px)',
         }}>
-          <Zap size={13} color="#00FF88" />
+          <Zap size={13} color="var(--accent)" />
           <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#888888' }}>
             Agendamiento inteligente para Colombia
           </span>
@@ -271,7 +271,7 @@ function Hero() {
           {!typedDone && (
             <span style={{
               display: 'inline-block', width: 3, height: '0.85em',
-              background: '#00FF88', verticalAlign: 'text-bottom', marginLeft: 3,
+              background: 'var(--accent)', verticalAlign: 'text-bottom', marginLeft: 3,
               animation: 'cursorBlink 0.7s ease-in-out infinite',
             }} />
           )}
@@ -300,7 +300,7 @@ function Hero() {
           <button
             onClick={() => navigate('/turno-demo')}
             style={{
-              background: '#00FF88', border: 'none',
+              background: 'var(--accent)', border: 'none',
               color: '#0A0A0A', padding: '14px 32px',
               borderRadius: 10, fontFamily: 'DM Sans, sans-serif',
               fontSize: '1rem', fontWeight: 700, cursor: 'pointer',
@@ -369,7 +369,7 @@ const FEATURES = [
     icon: Calendar,
     title: 'Agenda 24/7',
     desc: 'Tus clientes reservan en minutos desde el celular, sin llamadas ni mensajes. Tú descansas, el negocio trabaja.',
-    color: '#00FF88',
+    color: 'var(--accent)',
   },
   {
     icon: MessageCircle,
@@ -387,7 +387,7 @@ const FEATURES = [
     icon: Users,
     title: 'Gestión de equipo',
     desc: 'Administra estilistas, horarios y disponibilidad. Cada uno con su propia agenda sincronizada.',
-    color: '#00FF88',
+    color: 'var(--accent)',
   },
 ]
 
@@ -399,7 +399,7 @@ function Features() {
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <p style={{
           fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem',
-          color: '#00FF88', letterSpacing: '0.12em', textTransform: 'uppercase',
+          color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase',
           marginBottom: 12, textAlign: 'center',
           opacity: visible ? 1 : 0,
           transform: visible ? 'translateY(0)' : 'translateY(30px)',
@@ -512,7 +512,7 @@ function HowItWorks() {
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <p style={{
           fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem',
-          color: '#00FF88', letterSpacing: '0.12em', textTransform: 'uppercase',
+          color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase',
           marginBottom: 12, textAlign: 'center',
           opacity: visible ? 1 : 0,
           transform: visible ? 'translateY(0)' : 'translateY(30px)',
@@ -560,7 +560,7 @@ function HowItWorks() {
                 border: '1px solid rgba(61,255,168,0.14)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto 20px',
-                color: '#00FF88',
+                color: 'var(--accent)',
               }}>
                 {s.icon}
               </div>
@@ -722,7 +722,7 @@ function Pricing() {
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <p style={{
           fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem',
-          color: '#00FF88', letterSpacing: '0.12em', textTransform: 'uppercase',
+          color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase',
           marginBottom: 12, textAlign: 'center',
           opacity: visible ? 1 : 0,
           transform: visible ? 'translateY(0)' : 'translateY(30px)',
@@ -770,7 +770,7 @@ function Pricing() {
                 <div style={{
                   position: 'absolute', top: -12, left: '50%',
                   transform: 'translateX(-50%)',
-                  background: '#00FF88', color: '#0A0A0A',
+                  background: 'var(--accent)', color: '#0A0A0A',
                   fontFamily: 'DM Sans, sans-serif', fontSize: '0.72rem', fontWeight: 700,
                   padding: '4px 14px', borderRadius: 999,
                   whiteSpace: 'nowrap',
@@ -809,7 +809,7 @@ function Pricing() {
                     fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem',
                     color: '#CCCCCC', marginBottom: 10,
                   }}>
-                    <CheckCircle size={15} color="#00FF88" />
+                    <CheckCircle size={15} color="var(--accent)" />
                     {f}
                   </li>
                 ))}
@@ -880,7 +880,7 @@ function CTABand() {
           background: '#111111', border: '1px solid #1E1E1E',
           borderRadius: 999, padding: '6px 16px', marginBottom: 24,
         }}>
-          <Clock size={13} color="#00FF88" />
+          <Clock size={13} color="var(--accent)" />
           <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#888888' }}>
             Setup en menos de 10 minutos
           </span>
@@ -912,7 +912,7 @@ function CTABand() {
         <button
           onClick={() => navigate('/turno-demo')}
           style={{
-            background: '#00FF88', border: 'none',
+            background: 'var(--accent)', border: 'none',
             color: '#0A0A0A', padding: '16px 40px',
             borderRadius: 12, fontFamily: 'DM Sans, sans-serif',
             fontSize: '1.05rem', fontWeight: 700, cursor: 'pointer',
@@ -950,7 +950,7 @@ function Footer() {
     }}>
       <span style={{
         fontFamily: 'Syne, sans-serif', fontWeight: 800,
-        fontSize: '1.1rem', color: '#00FF88',
+        fontSize: '1.1rem', color: 'var(--accent)',
       }}>
         TURNO
       </span>
@@ -1000,3 +1000,4 @@ export default function LandingPage() {
     </div>
   )
 }
+

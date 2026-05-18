@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { ChevronLeft } from 'lucide-react'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -63,7 +63,7 @@ export default function PasoFormulario({ seleccion, guardando, onConfirmar, onVo
           { lbl: 'Servicio', val: servicio.name, color: '#F5F5F5' },
           { lbl: 'Estilista', val: estilista.name, color: '#F5F5F5' },
           { lbl: 'Fecha',    val: fechaLinda,    color: '#F5F5F5' },
-          { lbl: 'Hora',     val: formatHora(hora), color: '#00FF88' },
+          { lbl: 'Hora',     val: formatHora(hora), color: 'var(--accent)' },
         ].map(({ lbl, val, color }) => (
           <div key={lbl} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
             <span style={{ color: '#888888', fontSize: '0.8rem' }}>{lbl}</span>
@@ -119,3 +119,4 @@ export default function PasoFormulario({ seleccion, guardando, onConfirmar, onVo
     </div>
   )
 }
+

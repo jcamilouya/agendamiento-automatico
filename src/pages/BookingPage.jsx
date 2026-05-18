@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { sendWhatsApp, msgConfirmacion, msgNuevaCita } from '../lib/whatsapp'
@@ -140,7 +140,7 @@ export default function BookingPage() {
           <h1 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.4rem', color: '#F5F5F5', margin: 0 }}>
             {negocio.name}
           </h1>
-          <span style={{ background: '#0D3320', color: '#00FF88', fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}>
+          <span style={{ background: '#0D3320', color: 'var(--accent)', fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px', borderRadius: '999px' }}>
             Abierto
           </span>
         </div>
@@ -215,3 +215,4 @@ export default function BookingPage() {
     </div>
   )
 }
+

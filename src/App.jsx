@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import LandingPage   from './pages/LandingPage'
 import BookingPage   from './pages/BookingPage'
@@ -18,7 +18,7 @@ function ProtectedRoute({ children }) {
       }}>
         <span style={{
           width: 24, height: 24, borderRadius: '50%',
-          border: '2px solid #1E1E1E', borderTopColor: '#00FF88',
+          border: '2px solid #1E1E1E', borderTopcolor: 'var(--accent)',
           display: 'inline-block', animation: 'spin 0.7s linear infinite'
         }} />
       </div>
@@ -44,3 +44,4 @@ export default function App() {
     </BrowserRouter>
   )
 }
+

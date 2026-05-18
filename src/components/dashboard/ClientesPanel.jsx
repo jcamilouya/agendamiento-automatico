@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useCallback } from 'react'
 import { X, Phone, Calendar, Star, FileText, Loader2, Users, UserPlus } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
@@ -61,9 +61,9 @@ function ClientDrawer({ cliente, businessId, onClose }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
               <div style={{
                 width: '52px', height: '52px', borderRadius: '50%',
-                background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)',
+                background: 'rgba(var(--accent-rgb),0.1)', border: '1px solid rgba(var(--accent-rgb),0.25)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.2rem', color: '#00FF88',
+                fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.2rem', color: 'var(--accent)',
               }}>
                 {initials}
               </div>
@@ -101,7 +101,7 @@ function ClientDrawer({ cliente, businessId, onClose }) {
           {/* Notas privadas */}
           <div style={{ marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-              <FileText size={14} color="#00FF88" />
+              <FileText size={14} color="var(--accent)" />
               <h4 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: '0.85rem', color: '#F5F5F5' }}>
                 Notas del barbero
               </h4>
@@ -119,7 +119,7 @@ function ClientDrawer({ cliente, businessId, onClose }) {
               disabled={guardando}
               style={{
                 marginTop: '8px', padding: '8px 18px', borderRadius: '8px',
-                background: '#00FF88', color: '#050505',
+                background: 'var(--accent)', color: '#050505',
                 border: 'none', cursor: 'pointer',
                 fontWeight: 700, fontSize: '0.82rem',
                 fontFamily: 'DM Sans, sans-serif',
@@ -332,9 +332,9 @@ export default function ClientesPanel({ businessId }) {
               {/* Avatar */}
               <div style={{
                 width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-                background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.2)',
+                background: 'rgba(var(--accent-rgb),0.08)', border: '1px solid rgba(var(--accent-rgb),0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#00FF88', fontWeight: 700, fontSize: '0.95rem', fontFamily: 'Syne, sans-serif',
+                color: 'var(--accent)', fontWeight: 700, fontSize: '0.95rem', fontFamily: 'Syne, sans-serif',
               }}>
                 {c.name.charAt(0).toUpperCase()}
               </div>
@@ -354,7 +354,7 @@ export default function ClientesPanel({ businessId }) {
               </div>
 
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <p style={{ color: '#00FF88', fontWeight: 700, fontSize: '0.95rem', fontFamily: 'Syne, sans-serif' }}>
+                <p style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.95rem', fontFamily: 'Syne, sans-serif' }}>
                   {c.visit_count ?? 0}
                 </p>
                 <p style={{ color: '#444', fontSize: '0.68rem' }}>visitas</p>
@@ -390,3 +390,4 @@ export default function ClientesPanel({ businessId }) {
     </div>
   )
 }
+

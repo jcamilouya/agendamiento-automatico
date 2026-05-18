@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 
 export default function NotFoundPage() {
   return (
@@ -42,7 +42,7 @@ export default function NotFoundPage() {
           <Link to="/register" style={{ textDecoration: 'none' }}>
             <div style={{
               width: '100%', padding: '14px',
-              background: '#00FF88', color: '#050505',
+              background: 'var(--accent)', color: '#050505',
               borderRadius: '10px', fontWeight: 700, fontSize: '0.9rem',
               cursor: 'pointer', boxSizing: 'border-box',
             }}>
@@ -66,3 +66,4 @@ export default function NotFoundPage() {
     </div>
   )
 }
+

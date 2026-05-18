@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { CalendarX, X, MessageCircle } from 'lucide-react'
 import { whatsAppLink, msgRecordatorio } from '../../lib/whatsapp'
 import { supabase } from '../../lib/supabase'
@@ -280,7 +280,7 @@ function CitaRow({ cita, index, negocioName, updating, onAction }) {
       </span>
 
       {/* Hora */}
-      <span style={{ color: '#00FF88', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 700 }}>
+      <span style={{ color: 'var(--accent)', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 700 }}>
         {formatHora(cita.start_time)}
       </span>
 
@@ -336,7 +336,7 @@ function CitaRow({ cita, index, negocioName, updating, onAction }) {
         {updating ? (
           <div style={{
             width: 16, height: 16, borderRadius: '50%',
-            border: '2px solid transparent', borderTopColor: '#00FF88',
+            border: '2px solid transparent', borderTopcolor: 'var(--accent)',
             animation: 'spin 0.7s linear infinite',
           }} />
         ) : (
@@ -349,7 +349,7 @@ function CitaRow({ cita, index, negocioName, updating, onAction }) {
               />
             )}
             {cita.status === 'pending' && (
-              <ActionBtn label="Confirmar" color="#00FF88" bg="rgba(61,255,168,0.1)" border="rgba(61,255,168,0.3)" onClick={() => onAction(cita.id, 'confirmed')} />
+              <ActionBtn label="Confirmar" color="var(--accent)" bg="rgba(61,255,168,0.1)" border="rgba(61,255,168,0.3)" onClick={() => onAction(cita.id, 'confirmed')} />
             )}
             {cita.status === 'confirmed' && (
               <ActionBtn label="Completar" color="#AAAAAA" bg="rgba(136,136,136,0.1)" border="rgba(136,136,136,0.3)" onClick={() => onAction(cita.id, 'completed')} />
@@ -383,3 +383,4 @@ function ActionBtn({ label, color, bg, border, onClick }) {
     </button>
   )
 }
+

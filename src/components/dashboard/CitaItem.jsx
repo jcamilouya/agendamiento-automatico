@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { MessageCircle } from 'lucide-react'
 import { whatsAppLink, msgRecordatorio } from '../../lib/whatsapp'
 
@@ -65,7 +65,7 @@ export default function CitaItem({ cita, index, negocioName, onStatusChange }) {
       {/* Hora */}
       <div style={{ width: 68, flexShrink: 0 }}>
         <p style={{
-          color: '#00FF88', fontWeight: 700,
+          color: 'var(--accent)', fontWeight: 700,
           fontSize: '0.85rem', fontFamily: 'DM Sans, sans-serif',
           lineHeight: 1.2,
         }}>
@@ -137,7 +137,7 @@ export default function CitaItem({ cita, index, negocioName, onStatusChange }) {
               style={{
                 ...actionBtnBase,
                 background: 'rgba(61,255,168,0.1)',
-                color: '#00FF88',
+                color: 'var(--accent)',
                 border: '1px solid rgba(61,255,168,0.3)',
               }}
             >
@@ -175,3 +175,4 @@ export default function CitaItem({ cita, index, negocioName, onStatusChange }) {
     </div>
   )
 }
+

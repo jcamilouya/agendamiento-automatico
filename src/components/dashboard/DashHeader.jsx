@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { Bell, X, CheckCheck, Calendar, Clock, Sun, Moon } from 'lucide-react'
 import { useNotifications, formatDateShort, formatHM, relativeTime } from '../../hooks/useNotifications'
 
@@ -58,10 +58,10 @@ function NotifToast({ notif, onDismiss }) {
           zIndex: 1000,
           width: 'min(420px, calc(100vw - 40px))',
           background: '#0F0F0F',
-          border: '1px solid rgba(0,255,136,0.35)',
+          border: '1px solid rgba(var(--accent-rgb),0.35)',
           borderRadius: 20,
           overflow: 'hidden',
-          boxShadow: '0 0 0 1px rgba(0,255,136,0.1), 0 40px 80px rgba(0,0,0,0.8), 0 0 60px rgba(0,255,136,0.12)',
+          boxShadow: '0 0 0 1px rgba(var(--accent-rgb),0.1), 0 40px 80px rgba(0,0,0,0.8), 0 0 60px rgba(var(--accent-rgb),0.12)',
           animation: leaving
             ? 'toastBigOut 0.35s ease forwards'
             : 'toastBigIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards',
@@ -78,15 +78,15 @@ function NotifToast({ notif, onDismiss }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 7,
-              background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)',
+              background: 'rgba(var(--accent-rgb),0.1)', border: '1px solid rgba(var(--accent-rgb),0.25)',
               borderRadius: 999, padding: '5px 12px',
             }}>
               <span style={{
                 width: 7, height: 7, borderRadius: '50%',
-                background: '#00FF88', boxShadow: '0 0 8px #00FF88',
+                background: 'var(--accent)', boxShadow: '0 0 8px #00FF88',
                 animation: 'pulse-dot 1.2s ease-in-out infinite',
               }} />
-              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.75rem', color: '#00FF88', letterSpacing: '0.06em' }}>
+              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '0.06em' }}>
                 NUEVA CITA
               </span>
             </div>
@@ -99,9 +99,9 @@ function NotifToast({ notif, onDismiss }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
             <div style={{
               width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
-              background: 'rgba(0,255,136,0.1)', border: '2px solid rgba(0,255,136,0.3)',
+              background: 'rgba(var(--accent-rgb),0.1)', border: '2px solid rgba(var(--accent-rgb),0.3)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.3rem', color: '#00FF88',
+              fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.3rem', color: 'var(--accent)',
             }}>
               {initials}
             </div>
@@ -141,13 +141,13 @@ function NotifToast({ notif, onDismiss }) {
             onClick={dismiss}
             style={{
               width: '100%', padding: '12px',
-              background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)',
-              borderRadius: 10, color: '#00FF88',
+              background: 'rgba(var(--accent-rgb),0.1)', border: '1px solid rgba(var(--accent-rgb),0.25)',
+              borderRadius: 10, color: 'var(--accent)',
               fontFamily: 'DM Sans, sans-serif', fontWeight: 700, fontSize: '0.88rem',
               cursor: 'pointer', transition: 'all 0.2s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,255,136,0.18)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,255,136,0.1)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(var(--accent-rgb),0.18)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(var(--accent-rgb),0.1)' }}
           >
             Entendido ✓
           </button>
@@ -257,7 +257,7 @@ function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose 
             </span>
             {unreadCount > 0 && (
               <span style={{
-                background: '#00FF88', color: '#0A0A0A',
+                background: 'var(--accent)', color: '#0A0A0A',
                 fontSize: '0.6rem', fontWeight: 700,
                 borderRadius: 999, padding: '1px 6px',
                 fontFamily: 'DM Sans, sans-serif',
@@ -416,7 +416,7 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
             {unreadCount > 0 && (
               <span style={{
                 position: 'absolute', top: -5, right: -5,
-                background: '#00FF88', color: '#0A0A0A',
+                background: 'var(--accent)', color: '#0A0A0A',
                 fontSize: '0.58rem', fontWeight: 800,
                 borderRadius: 999, padding: '2px 5px',
                 fontFamily: 'DM Sans, sans-serif',
@@ -461,7 +461,7 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
             border: '1px solid rgba(61,255,168,0.25)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: 'Syne, sans-serif', fontWeight: 700,
-            fontSize: '0.85rem', color: '#00FF88', flexShrink: 0,
+            fontSize: '0.85rem', color: 'var(--accent)', flexShrink: 0,
           }}>
             {negocio ? getInitials(negocio.name) : '?'}
           </div>
@@ -470,3 +470,4 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
     </>
   )
 }
+

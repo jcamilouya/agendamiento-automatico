@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { CalendarX, Clock } from 'lucide-react'
 import CitaItem from './CitaItem'
 
@@ -26,7 +26,7 @@ function formatHora(timeStr) {
 // Color y glow de cada estado
 function slotStyle(status, esProxima) {
   if (esProxima) return { bg: '#F59E0B', glow: 'rgba(245,158,11,0.5)', pulse: true }
-  if (status === 'confirmed')  return { bg: '#00FF88', glow: 'rgba(0,255,136,0.4)', pulse: false }
+  if (status === 'confirmed')  return { bg: '#00FF88', glow: 'rgba(var(--accent-rgb),0.4)', pulse: false }
   if (status === 'completed')  return { bg: '#444444', glow: 'transparent', pulse: false }
   if (status === 'cancelled')  return { bg: '#FF4D4D', glow: 'rgba(255,77,77,0.3)', pulse: false }
   return { bg: '#F59E0B', glow: 'rgba(245,158,11,0.35)', pulse: false } // pending
@@ -68,8 +68,8 @@ function TimelineBar({ citas }) {
             top: '-6px',
             bottom: '-6px',
             width: '2px',
-            background: '#00FF88',
-            boxShadow: '0 0 8px rgba(0,255,136,0.8)',
+            background: 'var(--accent)',
+            boxShadow: '0 0 8px rgba(var(--accent-rgb),0.8)',
             zIndex: 10,
             borderRadius: '2px',
           }}>
@@ -81,8 +81,8 @@ function TimelineBar({ citas }) {
               width: '8px',
               height: '8px',
               borderRadius: '50%',
-              background: '#00FF88',
-              boxShadow: '0 0 10px rgba(0,255,136,0.9)',
+              background: 'var(--accent)',
+              boxShadow: '0 0 10px rgba(var(--accent-rgb),0.9)',
             }} />
           </div>
         )}
@@ -164,7 +164,7 @@ function TimelineBar({ citas }) {
       <div style={{ display: 'flex', gap: '14px', marginTop: '10px', flexWrap: 'wrap' }}>
         {[
           { color: '#F59E0B', label: 'Pendiente' },
-          { color: '#00FF88', label: 'Confirmada' },
+          { color: 'var(--accent)', label: 'Confirmada' },
           { color: '#444444', label: 'Completada' },
           { color: '#FF4D4D', label: 'Cancelada' },
         ].map(({ color, label }) => (
@@ -215,7 +215,7 @@ export default function AgendaHoy({ citas, loading, negocioName, onStatusChange 
         padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Clock size={16} color="#00FF88" />
+          <Clock size={16} color="var(--accent)" />
           <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1rem', color: '#F5F5F5' }}>
             Agenda de hoy
           </h2>
@@ -230,10 +230,10 @@ export default function AgendaHoy({ citas, loading, negocioName, onStatusChange 
           </span>
           {!loading && (
             <span style={{
-              background: 'rgba(0,255,136,0.08)',
-              border: '1px solid rgba(0,255,136,0.2)',
+              background: 'rgba(var(--accent-rgb),0.08)',
+              border: '1px solid rgba(var(--accent-rgb),0.2)',
               borderRadius: '999px', padding: '3px 10px',
-              color: '#00FF88', fontSize: '0.72rem', fontWeight: 600,
+              color: 'var(--accent)', fontSize: '0.72rem', fontWeight: 600,
             }}>
               {citas.length} {citas.length === 1 ? 'cita' : 'citas'}
             </span>
@@ -275,3 +275,4 @@ export default function AgendaHoy({ citas, loading, negocioName, onStatusChange 
     </div>
   )
 }
+

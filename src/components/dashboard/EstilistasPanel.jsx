@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { Plus, X, Pencil, Users, TrendingUp, Upload, Camera } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
@@ -352,8 +352,8 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
         borderRadius: 10, padding: '12px 14px', marginBottom: 14,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 10 }}>
-          <TrendingUp size={11} color="#00FF88" />
-          <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.65rem', color: '#00FF88', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <TrendingUp size={11} color="var(--accent)" />
+          <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.65rem', color: 'var(--accent)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             Últimos 30 días
           </span>
         </div>
@@ -367,7 +367,7 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
           <StatMini
             value={formatCOP(stats.ingresos)}
             label="ingresos"
-            color="#00FF88"
+            color="var(--accent)"
           />
           <StatMini
             value={`${tasaCompl}%`}
@@ -380,11 +380,11 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
         {stats.total > 0 && (
           <div style={{ marginTop: 10 }}>
             <div style={{ display: 'flex', height: 4, borderRadius: 999, overflow: 'hidden', background: '#1A1A1A', gap: 1 }}>
-              <BarSegment pct={tasaCompl}  color="#00FF88" />
+              <BarSegment pct={tasaCompl}  color="var(--accent)" />
               <BarSegment pct={tasaCanc}   color="#FF4D4D" />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.6rem', color: '#00FF88' }}>
+              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.6rem', color: 'var(--accent)' }}>
                 {stats.completed} completadas
               </span>
               <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.6rem', color: '#444' }}>
@@ -505,3 +505,4 @@ function EmptyEstilistas({ onAdd }) {
     </div>
   )
 }
+

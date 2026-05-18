@@ -1,4 +1,4 @@
-import { CheckCircle } from 'lucide-react'
+﻿import { CheckCircle } from 'lucide-react'
 
 const DIAS_NOMBRE = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -19,7 +19,7 @@ export default function PasoConfirmacion({ seleccion, negocio, onReiniciar }) {
       {/* Ícono y título */}
       <div style={{ marginBottom: '28px' }}>
         <CheckCircle
-          size={64} color="#00FF88"
+          size={64} color="var(--accent)"
           style={{ margin: '0 auto 16px', filter: 'drop-shadow(0 0 20px rgba(61,255,168,0.4))' }}
         />
         <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.8rem', color: '#F5F5F5', marginBottom: '8px' }}>
@@ -54,7 +54,7 @@ export default function PasoConfirmacion({ seleccion, negocio, onReiniciar }) {
 
           <div style={{ paddingTop: '14px', borderTop: '1px solid #1E1E1E', marginTop: '4px' }}>
             <p style={{ color: '#555555', fontSize: '0.72rem', marginBottom: '4px' }}>Fecha y hora</p>
-            <p style={{ color: '#00FF88', fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>
+            <p style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>
               {fechaLinda} · {formatHora(hora)}
             </p>
           </div>
@@ -78,3 +78,4 @@ export default function PasoConfirmacion({ seleccion, negocio, onReiniciar }) {
     </div>
   )
 }
+

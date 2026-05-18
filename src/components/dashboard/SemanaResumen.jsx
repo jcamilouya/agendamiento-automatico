@@ -1,4 +1,4 @@
-const DIAS_SHORT  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
+﻿const DIAS_SHORT  = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
 const MESES_SHORT = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
 
 function getWeekDays() {
@@ -152,7 +152,7 @@ export default function SemanaResumen({ weekAppointments, upcomingAppointments, 
                   borderRadius: 8, padding: '6px 10px', textAlign: 'center',
                   minWidth: 54, flexShrink: 0,
                 }}>
-                  <p style={{ color: '#00FF88', fontSize: '0.68rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }}>
+                  <p style={{ color: 'var(--accent)', fontSize: '0.68rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }}>
                     {formatFechaProxima(a.date)}
                   </p>
                   <p style={{ color: '#888888', fontSize: '0.65rem', fontFamily: 'DM Sans, sans-serif' }}>
@@ -184,3 +184,4 @@ export default function SemanaResumen({ weekAppointments, upcomingAppointments, 
     </div>
   )
 }
+

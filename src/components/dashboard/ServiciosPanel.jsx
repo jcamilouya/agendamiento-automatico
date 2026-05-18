@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { Plus, X, Pencil, Scissors, Upload, ImageIcon } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
@@ -379,7 +379,7 @@ function ServiceRow({ service, index, toggling, onEdit, onToggle }) {
 
       {/* Precio */}
       <span style={{
-        color: '#00FF88', fontSize: '0.88rem',
+        color: 'var(--accent)', fontSize: '0.88rem',
         fontFamily: 'DM Sans, sans-serif', fontWeight: 700,
       }}>
         {formatCOP(service.price)}
@@ -463,3 +463,4 @@ function EmptyServicios({ onAdd }) {
     </div>
   )
 }
+
