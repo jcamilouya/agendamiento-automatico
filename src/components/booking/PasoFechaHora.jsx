@@ -29,17 +29,19 @@ const PROMO_CONFIG = {
   mediodia: { label: '🌅 Mediodía', color: '#A855F7', bg: '#1A0A2E', border: '#4C1D95' },
 }
 
-function generarSlots(disp, citas, bloques, duracion) {
+function generarSlots(disp, citas, bloques, duracion, esHoy) {
   const ini = timeToMin(disp.start_time)
   const fin = timeToMin(disp.end_time)
+  const ahora = esHoy ? new Date().getHours() * 60 + new Date().getMinutes() : 0
   const slots = []
   let t = ini
   while (t + duracion <= fin) {
     const tFin = t + duracion
-    const ocupado = [...citas, ...bloques].some(x =>
+    const pasado = esHoy && tFin <= ahora
+    const ocupado = !pasado && [...citas, ...bloques].some(x =>
       t < timeToMin(x.end_time) && tFin > timeToMin(x.start_time)
     )
-    slots.push({ tiempo: minToTime(t), disponible: !ocupado })
+    if (!pasado) slots.push({ tiempo: minToTime(t), disponible: !ocupado })
     t += duracion
   }
   return slots
@@ -84,7 +86,8 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
         .eq('stylist_id', estilista.id).eq('date', fecha).in('status', ['pending', 'confirmed'])
       const { data: bloques } = await supabase.from('time_blocks').select('start_time, end_time')
         .eq('stylist_id', estilista.id).eq('date', fecha)
-      setSlots(generarSlots(disp, citas || [], bloques || [], servicio.duration_minutes))
+      const esHoy = fecha === new Date().toISOString().split('T')[0]
+      setSlots(generarSlots(disp, citas || [], bloques || [], servicio.duration_minutes, esHoy))
     } finally { setCargando(false) }
   }
 
