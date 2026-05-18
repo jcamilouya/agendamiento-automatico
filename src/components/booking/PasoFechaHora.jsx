@@ -104,8 +104,8 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
   function esDiaDisponible(dia) {
     if (!dia) return false
     const f = new Date(mes.getFullYear(), mes.getMonth(), dia)
-    const manana = new Date(hoy); manana.setDate(hoy.getDate() + 1); manana.setHours(0,0,0,0)
-    if (f < manana) return false
+    const hoyInicio = new Date(hoy); hoyInicio.setHours(0, 0, 0, 0)
+    if (f < hoyInicio) return false
     return diasDisp.includes(f.getDay())
   }
 
