@@ -629,10 +629,9 @@ body {
   background: #111111;
   border: 1px solid #1E1E1E;
   border-radius: 16px;
-  padding: 32px;
+  padding: 24px 28px;
   width: 100%;
   max-width: 480px;
-  margin: auto;
   animation: fadeInUp 0.2s ease forwards;
   position: relative;
 }

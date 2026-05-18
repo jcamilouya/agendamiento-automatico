@@ -193,8 +193,12 @@ export default function ServiciosPanel({ businessId }) {
 
       {/* Modal */}
       {modal && (
-        <div className="dash-modal-overlay" onClick={e => e.target === e.currentTarget && setModal(false)}>
-          <div style={{ display: 'flex', justifyContent: 'center', minHeight: '100%', alignItems: 'flex-start' }}>
+        <div
+          className="dash-modal-overlay"
+          ref={el => { if (el) el.scrollTop = 0 }}
+          onClick={e => e.target === e.currentTarget && setModal(false)}
+        >
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
           <div className="dash-modal">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
               <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1rem', color: '#F5F5F5' }}>
@@ -208,7 +212,7 @@ export default function ServiciosPanel({ businessId }) {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <FormGroup label="Nombre *">
                 <input
                   ref={nameInputRef}
