@@ -181,6 +181,7 @@ export default function EstilistasPanel({ businessId }) {
       {/* Modal */}
       {modal && (
         <div className="dash-modal-overlay" onClick={e => e.target === e.currentTarget && setModal(false)}>
+          <div style={{ display: 'flex', justifyContent: 'center', minHeight: '100%', alignItems: 'flex-start' }}>
           <div className="dash-modal">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
               <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1rem', color: '#F5F5F5' }}>
@@ -279,6 +280,7 @@ export default function EstilistasPanel({ businessId }) {
                 {saving ? 'Guardando…' : (editing ? 'Guardar cambios' : 'Crear integrante')}
               </button>
             </div>
+          </div>
           </div>
         </div>
       )}
