@@ -36,21 +36,25 @@ ALTER TABLE clients  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE waitlist ENABLE ROW LEVEL SECURITY;
 
 -- clients: el dueño autenticado ve sus clientes
-CREATE POLICY IF NOT EXISTS "Owner sees clients" ON clients
+DROP POLICY IF EXISTS "Owner sees clients" ON clients;
+CREATE POLICY "Owner sees clients" ON clients
   FOR ALL USING (
     business_id IN (SELECT id FROM businesses WHERE owner_id = auth.uid())
   );
 
 -- waitlist: inserción pública (desde booking flow sin auth)
-CREATE POLICY IF NOT EXISTS "Public insert waitlist" ON waitlist
+DROP POLICY IF EXISTS "Public insert waitlist" ON waitlist;
+CREATE POLICY "Public insert waitlist" ON waitlist
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "Owner sees waitlist" ON waitlist
+DROP POLICY IF EXISTS "Owner sees waitlist" ON waitlist;
+CREATE POLICY "Owner sees waitlist" ON waitlist
   FOR SELECT USING (
     business_id IN (SELECT id FROM businesses WHERE owner_id = auth.uid())
   );
 
-CREATE POLICY IF NOT EXISTS "Owner updates waitlist" ON waitlist
+DROP POLICY IF EXISTS "Owner updates waitlist" ON waitlist;
+CREATE POLICY "Owner updates waitlist" ON waitlist
   FOR UPDATE USING (
     business_id IN (SELECT id FROM businesses WHERE owner_id = auth.uid())
   );

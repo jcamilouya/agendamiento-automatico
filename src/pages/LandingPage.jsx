@@ -101,7 +101,7 @@ function Nav() {
           Iniciar sesión
         </button>
         <button
-          onClick={() => navigate('/demo')}
+          onClick={() => navigate('/turno-demo')}
           style={{
             background: '#00FF88', border: 'none',
             color: '#0A0A0A', padding: '8px 20px',
@@ -298,7 +298,7 @@ function Hero() {
           transition: 'opacity 0.6s ease 0.15s, transform 0.6s ease 0.15s',
         }}>
           <button
-            onClick={() => navigate('/demo')}
+            onClick={() => navigate('/turno-demo')}
             style={{
               background: '#00FF88', border: 'none',
               color: '#0A0A0A', padding: '14px 32px',
@@ -816,7 +816,7 @@ function Pricing() {
               </ul>
 
               <button
-                onClick={() => navigate('/demo')}
+                onClick={() => navigate('/turno-demo')}
                 style={{
                   width: '100%',
                   background: p.highlight ? '#00FF88' : 'transparent',
@@ -910,7 +910,7 @@ function CTABand() {
         </p>
 
         <button
-          onClick={() => navigate('/demo')}
+          onClick={() => navigate('/turno-demo')}
           style={{
             background: '#00FF88', border: 'none',
             color: '#0A0A0A', padding: '16px 40px',
@@ -961,7 +961,7 @@ function Footer() {
 
       <div style={{ display: 'flex', gap: 24 }}>
         {[
-          { label: 'Demo',      action: () => navigate('/demo') },
+          { label: 'Demo',      action: () => navigate('/turno-demo') },
           { label: 'Dashboard', action: () => navigate('/login') },
         ].map(l => (
           <button

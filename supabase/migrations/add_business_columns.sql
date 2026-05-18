@@ -13,14 +13,17 @@ ALTER TABLE businesses ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMPTZ DEFAUL
 -- (el negocio demo turno-demo no tiene owner_id, así que las políticas existentes lo siguen leyendo)
 ALTER TABLE businesses ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Owner sees own business"
+DROP POLICY IF EXISTS "Owner sees own business" ON businesses;
+CREATE POLICY "Owner sees own business"
   ON businesses FOR SELECT
   USING (owner_id = auth.uid() OR owner_id IS NULL);
 
-CREATE POLICY IF NOT EXISTS "Owner inserts own business"
+DROP POLICY IF EXISTS "Owner inserts own business" ON businesses;
+CREATE POLICY "Owner inserts own business"
   ON businesses FOR INSERT
   WITH CHECK (owner_id = auth.uid());
 
-CREATE POLICY IF NOT EXISTS "Owner updates own business"
+DROP POLICY IF EXISTS "Owner updates own business" ON businesses;
+CREATE POLICY "Owner updates own business"
   ON businesses FOR UPDATE
   USING (owner_id = auth.uid());

@@ -199,26 +199,60 @@ body {
 
 /* ── Light mode overrides ── */
 .theme-light {
-  --glass-bg:            rgba(0, 0, 0, 0.03);
-  --glass-bg-hover:      rgba(0, 0, 0, 0.06);
+  --glass-bg:            rgba(255, 255, 255, 0.75);
+  --glass-bg-hover:      rgba(255, 255, 255, 0.92);
   --glass-border:        rgba(0, 0, 0, 0.08);
-  --glass-border-bright: rgba(0, 0, 0, 0.14);
-  --glass-shadow:        0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
-  background-color: #F0F2F5;
-  color: #1A1A1A;
-  transition: background-color 0.4s ease, color 0.4s ease;
+  --glass-border-bright: rgba(0, 0, 0, 0.16);
+  --glass-shadow:        0 4px 24px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+  background-color: #EEF0F4;
+  color: #111111;
 }
+/* base surfaces */
 .theme-light body,
-.theme-light .dash-layout { background: #F0F2F5; }
-.theme-light .dash-sidebar { background: #FFFFFF; border-color: #E5E7EB; }
-.theme-light .dash-main    { background: #F0F2F5; }
-.theme-light .dash-header  { background: rgba(240,242,245,0.92); border-color: #E5E7EB; }
-.theme-light .dash-nav-item { color: #555555; }
-.theme-light .dash-nav-item:hover { background: rgba(0,255,136,0.06); color: #111; }
-.theme-light .dash-nav-item.active { background: rgba(0,255,136,0.1); color: #007A42; }
-.theme-light .kpi-card { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.06); }
-.theme-light .kpi-card:hover { border-color: rgba(0,180,100,0.3); }
-.theme-light .glass-card { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.06); }
+.theme-light .dash-layout    { background: #EEF0F4; }
+.theme-light .dash-main      { background: #EEF0F4; }
+/* sidebar */
+.theme-light .dash-sidebar   { background: #FFFFFF; border-color: #E2E6ED; }
+.theme-light .dash-nav-item  { color: #555555; }
+.theme-light .dash-nav-item:hover  { background: rgba(0,180,100,0.08); color: #111111; }
+.theme-light .dash-nav-item.active { background: rgba(0,180,100,0.12); color: #007A42; }
+.theme-light .dash-nav-item.active::before { background: #007A42; }
+/* header */
+.theme-light .dash-header    { background: rgba(238,240,244,0.95); border-color: #E2E6ED; }
+/* KPI cards */
+.theme-light .kpi-card       { background: #FFFFFF; border-color: #E2E6ED; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.theme-light .kpi-card:hover { border-color: rgba(0,180,100,0.35); box-shadow: 0 8px 28px rgba(0,180,100,0.12); }
+.theme-light .kpi-card::before { background: linear-gradient(90deg, transparent, rgba(0,0,0,0.04), transparent); }
+/* glass cards */
+.theme-light .glass-card     { background: #FFFFFF; border-color: #E2E6ED; }
+.theme-light .glass-card:hover { border-color: #CBD1DB; }
+/* grafico cards */
+.theme-light .grafico-card   { background: #FFFFFF; border-color: #E2E6ED; }
+/* estilista cards */
+.theme-light .estilista-card { background: #FFFFFF; border-color: #E2E6ED; }
+.theme-light .estilista-card:hover { border-color: #CBD1DB; }
+/* modal */
+.theme-light .dash-modal-overlay { background: rgba(0,0,0,0.35); }
+.theme-light .dash-modal     { background: #FFFFFF; border-color: #E2E6ED; }
+/* inputs */
+.theme-light .dash-input     { background: #F5F7FA; border-color: #D1D5DB; color: #111111; }
+.theme-light .dash-input:focus { border-color: #00CC6A; }
+.theme-light .dash-input::placeholder { color: #AAAAAA; }
+/* agenda items */
+.theme-light .agenda-item    { border-color: #E2E6ED; }
+/* citas rows */
+.theme-light .citas-data-row  { border-color: #EEF0F4; }
+.theme-light .citas-data-row:hover  { background: rgba(0,0,0,0.025); }
+/* servicios rows */
+.theme-light .servicios-data-row { border-color: #EEF0F4; }
+.theme-light .servicios-data-row:hover { background: rgba(0,0,0,0.025); }
+/* skeleton */
+.theme-light .dash-skeleton  {
+  background: linear-gradient(90deg, #E8EAEE 25%, #D8DCE4 50%, #E8EAEE 75%);
+  background-size: 200% 100%;
+}
+/* mobile sidebar */
+.theme-light .dash-sidebar.mobile-bottom { border-top-color: #E2E6ED; background: #FFFFFF; }
 
 /* ── Layout principal ── */
 .dash-layout {

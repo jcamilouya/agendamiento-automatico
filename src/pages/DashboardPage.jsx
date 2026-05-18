@@ -250,24 +250,25 @@ export default function DashboardPage() {
         <DashHeader negocio={negocio} pendingCount={pendingCount} theme={theme} onThemeToggle={toggleTheme} />
 
         <div style={{ padding: '28px 32px' }}>
-          {/* KPI Cards — siempre visibles */}
-          <div className="kpi-grid widget-0" style={{ marginBottom: 28 }}>
-            <KPICard icon={Calendar}   label="Citas hoy"    value={dataLoading ? '—' : String(todayAppts.length)} delay={0} />
-            <KPICard icon={DollarSign} label="Ingresos hoy" value={dataLoading ? '—' : formatCOP(revenueHoy)} sublabel="completadas" delay={100} />
-            <KPICard icon={Clock}      label="Pendientes"   value={dataLoading ? '—' : String(pendingCount)} delay={200} pulse={!dataLoading && pendingCount > 0} />
-            <KPICard icon={TrendingUp} label="Esta semana"  value={dataLoading ? '—' : String(weekCount)} sublabel="citas totales" delay={300} />
-          </div>
 
           {/* Sección activa */}
           {activeSection === 'citas' ? (
-            <CitasPanel
-              citas={allCitas}
-              loading={allCitasLoading}
-              stylists={stylists}
-              negocioName={negocio?.name}
-              onLoad={loadAllCitas}
-              onStatusChange={handleStatusChange}
-            />
+            <>
+              <div className="kpi-grid" style={{ marginBottom: 28 }}>
+                <KPICard icon={Calendar}   label="Citas hoy"    value={dataLoading ? '—' : String(todayAppts.length)} delay={0} />
+                <KPICard icon={DollarSign} label="Ingresos hoy" value={dataLoading ? '—' : formatCOP(revenueHoy)} sublabel="completadas" delay={100} />
+                <KPICard icon={Clock}      label="Pendientes"   value={dataLoading ? '—' : String(pendingCount)} delay={200} pulse={!dataLoading && pendingCount > 0} />
+                <KPICard icon={TrendingUp} label="Esta semana"  value={dataLoading ? '—' : String(weekCount)} sublabel="citas totales" delay={300} />
+              </div>
+              <CitasPanel
+                citas={allCitas}
+                loading={allCitasLoading}
+                stylists={stylists}
+                negocioName={negocio?.name}
+                onLoad={loadAllCitas}
+                onStatusChange={handleStatusChange}
+              />
+            </>
           ) : activeSection === 'clientes' ? (
             <ClientesPanel businessId={negocio?.id} />
           ) : activeSection === 'estilistas' ? (
@@ -284,21 +285,86 @@ export default function DashboardPage() {
               onWidgetOrderChange={handleWidgetOrderChange}
             />
           ) : (
-            <div
-              className="dash-content-grid widget-1"
-              style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24, alignItems: 'start' }}
-            >
-              <AgendaHoy
-                citas={todayAppts}
-                loading={dataLoading}
-                negocioName={negocio?.name}
-                onStatusChange={handleStatusChange}
-              />
-              <SemanaResumen
-                weekAppointments={weekAppts}
-                upcomingAppointments={upcomingAppts}
-                loading={dataLoading}
-              />
+            /* ── INICIO ─────────────────────────────────────────── */
+            <div style={{ animation: 'fadeInUp 0.35s ease forwards' }}>
+
+              {/* Welcome Banner */}
+              <div style={{
+                position: 'relative', overflow: 'hidden',
+                borderRadius: 16, padding: '28px 32px', marginBottom: 24,
+                background: `linear-gradient(135deg, ${accentColor}14 0%, rgba(5,5,5,0) 60%)`,
+                border: `1px solid ${accentColor}20`,
+              }}>
+                {/* Glow orb */}
+                <div style={{
+                  position: 'absolute', top: -80, right: -80,
+                  width: 260, height: 260, borderRadius: '50%',
+                  background: `radial-gradient(circle, ${accentColor}10 0%, transparent 70%)`,
+                  pointerEvents: 'none',
+                }} />
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
+                  <div>
+                    <p style={{
+                      color: accentColor, fontSize: '0.65rem', fontWeight: 700,
+                      letterSpacing: '0.12em', fontFamily: 'DM Sans, sans-serif',
+                      marginBottom: 8, opacity: 0.8,
+                    }}>
+                      PANEL DE CONTROL
+                    </p>
+                    <h2 style={{
+                      fontFamily: 'Syne, sans-serif', fontWeight: 800,
+                      fontSize: '1.55rem', color: '#F5F5F5', marginBottom: 6,
+                    }}>
+                      {dataLoading ? 'Cargando…' : `Hola, ${negocio?.name ?? 'bienvenido'} 👋`}
+                    </h2>
+                    <p style={{ color: '#555', fontSize: '0.83rem', fontFamily: 'DM Sans, sans-serif' }}>
+                      {dataLoading ? '' : pendingCount > 0
+                        ? `Tienes ${pendingCount} cita${pendingCount > 1 ? 's' : ''} pendiente${pendingCount > 1 ? 's' : ''} por confirmar hoy`
+                        : todayAppts.length > 0
+                          ? `${todayAppts.length} cita${todayAppts.length > 1 ? 's' : ''} programada${todayAppts.length > 1 ? 's' : ''} para hoy`
+                          : 'Sin citas programadas hoy — buen momento para descansar'
+                      }
+                    </p>
+                  </div>
+
+                  {/* Mini stats */}
+                  <div style={{ display: 'flex', gap: 28, alignItems: 'center', flexShrink: 0 }}>
+                    {[
+                      { label: 'Hoy', value: dataLoading ? '—' : String(todayAppts.length), color: accentColor },
+                      { label: 'Pendientes', value: dataLoading ? '—' : String(pendingCount), color: '#F59E0B' },
+                      { label: 'Completadas', value: dataLoading ? '—' : String(todayAppts.filter(a => a.status === 'completed').length), color: '#888' },
+                    ].map((s, i) => (
+                      <div key={i} style={{ textAlign: 'center' }}>
+                        <p style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.6rem', color: s.color, lineHeight: 1 }}>{s.value}</p>
+                        <p style={{ color: '#3A3A3A', fontSize: '0.68rem', fontFamily: 'DM Sans, sans-serif', marginTop: 4 }}>{s.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* KPI Cards */}
+              <div className="kpi-grid" style={{ marginBottom: 24 }}>
+                <KPICard icon={Calendar}   label="Citas hoy"    value={dataLoading ? '—' : String(todayAppts.length)} delay={0} />
+                <KPICard icon={DollarSign} label="Ingresos hoy" value={dataLoading ? '—' : formatCOP(revenueHoy)} sublabel="completadas" delay={80} />
+                <KPICard icon={Clock}      label="Pendientes"   value={dataLoading ? '—' : String(pendingCount)} delay={160} pulse={!dataLoading && pendingCount > 0} />
+                <KPICard icon={TrendingUp} label="Esta semana"  value={dataLoading ? '—' : String(weekCount)} sublabel="citas totales" delay={240} />
+              </div>
+
+              {/* Agenda + Semana */}
+              <div className="dash-content-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20, alignItems: 'start' }}>
+                <AgendaHoy
+                  citas={todayAppts}
+                  loading={dataLoading}
+                  negocioName={negocio?.name}
+                  onStatusChange={handleStatusChange}
+                />
+                <SemanaResumen
+                  weekAppointments={weekAppts}
+                  upcomingAppointments={upcomingAppts}
+                  loading={dataLoading}
+                />
+              </div>
             </div>
           )}
         </div>

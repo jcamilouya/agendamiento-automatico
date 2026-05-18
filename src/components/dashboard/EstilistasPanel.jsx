@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Plus, X, Pencil, Users, TrendingUp } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Plus, X, Pencil, Users, TrendingUp, Upload, Camera } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 const AVATAR_COLORS = [
@@ -22,6 +22,26 @@ function initForm() {
   return { name: '', specialties: '', photo_url: '' }
 }
 
+function resizeToBase64(file, maxPx = 240, quality = 0.82) {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        const scale = Math.min(maxPx / img.width, maxPx / img.height, 1)
+        const w = Math.round(img.width * scale)
+        const h = Math.round(img.height * scale)
+        const canvas = document.createElement('canvas')
+        canvas.width = w; canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.src = e.target.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function EstilistasPanel({ businessId }) {
   const [stylists,  setStylists]  = useState([])
   const [stats,     setStats]     = useState({})   // { [stylistId]: { total, completed, ingresos } }
@@ -30,6 +50,7 @@ export default function EstilistasPanel({ businessId }) {
   const [editing,   setEditing]   = useState(null)
   const [form,      setForm]      = useState(initForm)
   const [saving,    setSaving]    = useState(false)
+  const fileInputRef               = useRef(null)
   const [toggling,  setToggling]  = useState(null)
   const [error,     setError]     = useState('')
 
@@ -94,12 +115,12 @@ export default function EstilistasPanel({ businessId }) {
     if (editing) {
       const { data, error: err } = await supabase
         .from('stylists').update(payload).eq('id', editing.id).select().single()
-      if (err) { setError('Error al guardar'); setSaving(false); return }
+      if (err) { setError(err.message); setSaving(false); return }
       setStylists(prev => prev.map(s => s.id === editing.id ? data : s))
     } else {
       const { data, error: err } = await supabase
         .from('stylists').insert({ ...payload, business_id: businessId }).select().single()
-      if (err) { setError('Error al guardar'); setSaving(false); return }
+      if (err) { setError(err.message); setSaving(false); return }
       setStylists(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)))
     }
     setSaving(false); setModal(false)
@@ -188,13 +209,47 @@ export default function EstilistasPanel({ businessId }) {
                   onChange={e => setForm(f => ({ ...f, specialties: e.target.value }))}
                 />
               </FormGroup>
-              <FormGroup label="URL de foto" hint="opcional">
+              <FormGroup label="Foto" hint="opcional — elige desde tu PC">
                 <input
-                  className="dash-input"
-                  placeholder="https://..."
-                  value={form.photo_url}
-                  onChange={e => setForm(f => ({ ...f, photo_url: e.target.value }))}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.target.files[0]
+                    if (!file) return
+                    const b64 = await resizeToBase64(file)
+                    setForm(f => ({ ...f, photo_url: b64 }))
+                  }}
                 />
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '10px 14px', borderRadius: 8, cursor: 'pointer',
+                    border: '1px dashed #2A2A2A', background: '#0A0A0A',
+                    transition: 'border-color 0.2s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = '#00FF88'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = '#2A2A2A'}
+                >
+                  {form.photo_url ? (
+                    <img src={form.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                  ) : (
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Camera size={16} color="#444" />
+                    </div>
+                  )}
+                  <div>
+                    <p style={{ color: form.photo_url ? '#00FF88' : '#555', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', margin: 0 }}>
+                      {form.photo_url ? 'Foto cargada ✓' : 'Subir foto desde PC'}
+                    </p>
+                    <p style={{ color: '#3A3A3A', fontSize: '0.72rem', fontFamily: 'DM Sans, sans-serif', margin: '2px 0 0' }}>
+                      JPG, PNG o WebP — se comprime automático
+                    </p>
+                  </div>
+                  <Upload size={14} color="#333" style={{ marginLeft: 'auto', flexShrink: 0 }} />
+                </div>
               </FormGroup>
             </div>
 
@@ -243,16 +298,28 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
       style={{ animation: `fadeInUp 0.35s ease ${index * 60}ms forwards`, opacity: 0 }}
     >
       {/* Avatar */}
-      <div style={{
-        width: 56, height: 56, borderRadius: '50%',
-        background: color.bg, color: color.text,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.3rem',
-        margin: '0 auto 12px', flexShrink: 0,
-        border: `2px solid ${stylist.is_active ? color.text + '33' : '#1E1E1E'}`,
-      }}>
-        {stylist.name[0].toUpperCase()}
-      </div>
+      {stylist.photo_url ? (
+        <img
+          src={stylist.photo_url}
+          alt={stylist.name}
+          style={{
+            width: 56, height: 56, borderRadius: '50%', objectFit: 'cover',
+            margin: '0 auto 12px', display: 'block', flexShrink: 0,
+            border: `2px solid ${stylist.is_active ? color.text + '33' : '#1E1E1E'}`,
+          }}
+        />
+      ) : (
+        <div style={{
+          width: 56, height: 56, borderRadius: '50%',
+          background: color.bg, color: color.text,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.3rem',
+          margin: '0 auto 12px', flexShrink: 0,
+          border: `2px solid ${stylist.is_active ? color.text + '33' : '#1E1E1E'}`,
+        }}>
+          {stylist.name[0].toUpperCase()}
+        </div>
+      )}
 
       {/* Nombre */}
       <p style={{
