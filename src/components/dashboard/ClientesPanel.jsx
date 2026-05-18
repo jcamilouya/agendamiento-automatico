@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { X, Phone, Calendar, Star, FileText, Loader2, Users } from 'lucide-react'
+import { X, Phone, Calendar, Star, FileText, Loader2, Users, UserPlus } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
@@ -172,11 +172,91 @@ function ClientDrawer({ cliente, businessId, onClose }) {
   )
 }
 
+const FORM_EMPTY = { name: '', phone: '', email: '', notes: '' }
+
+function NuevoClienteModal({ businessId, onClose, onCreado }) {
+  const [form,      setForm]      = useState(FORM_EMPTY)
+  const [guardando, setGuardando] = useState(false)
+  const [error,     setError]     = useState('')
+
+  async function guardar() {
+    if (!form.name.trim() || !form.phone.trim()) {
+      setError('Nombre y teléfono son obligatorios')
+      return
+    }
+    setGuardando(true)
+    setError('')
+    const { error: err } = await supabase.from('clients').insert({
+      business_id: businessId,
+      name: form.name.trim(),
+      phone: form.phone.trim(),
+      email: form.email.trim() || null,
+      notes: form.notes.trim() || null,
+      visit_count: 0,
+    })
+    setGuardando(false)
+    if (err) { setError(err.message); return }
+    onCreado()
+    onClose()
+  }
+
+  const inp = (field) => ({
+    className: 'dash-input',
+    value: form[field],
+    onChange: e => setForm(f => ({ ...f, [field]: e.target.value })),
+    style: { width: '100%', marginBottom: 12 },
+  })
+
+  return (
+    <div className="dash-modal-overlay">
+      <div className="dash-modal" style={{ maxWidth: 420 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.05rem', color: '#F5F5F5' }}>
+            Nuevo cliente
+          </h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer' }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <input {...inp('name')}  placeholder="Nombre completo *" />
+        <input {...inp('phone')} placeholder="Teléfono (ej: 3001234567) *" />
+        <input {...inp('email')} placeholder="Email (opcional)" type="email" />
+        <textarea
+          className="dash-input"
+          placeholder="Notas privadas (opcional)"
+          value={form.notes}
+          onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+          rows={3}
+          style={{ width: '100%', marginBottom: 12, resize: 'vertical' }}
+        />
+
+        {error && <p style={{ color: '#FF4D4D', fontSize: '0.8rem', marginBottom: 10 }}>{error}</p>}
+
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{
+            padding: '9px 18px', borderRadius: 8, border: '1px solid #2A2A2A',
+            background: 'none', color: '#888', cursor: 'pointer',
+            fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem',
+          }}>
+            Cancelar
+          </button>
+          <button onClick={guardar} disabled={guardando} className="btn-mint">
+            {guardando ? <Loader2 size={14} style={{ animation: 'spin 0.7s linear infinite' }} /> : <UserPlus size={14} />}
+            {guardando ? 'Guardando…' : 'Agregar cliente'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ClientesPanel({ businessId }) {
   const [clientes,   setClientes]   = useState([])
   const [loading,    setLoading]    = useState(true)
   const [search,     setSearch]     = useState('')
   const [selected,   setSelected]   = useState(null)
+  const [showNuevo,  setShowNuevo]  = useState(false)
 
   const cargar = useCallback(async () => {
     if (!businessId) return
@@ -208,13 +288,19 @@ export default function ClientesPanel({ businessId }) {
             {clientes.length} clientes registrados
           </p>
         </div>
-        <input
-          className="dash-input"
-          placeholder="Buscar por nombre o teléfono..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={{ width: '240px' }}
-        />
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <input
+            className="dash-input"
+            placeholder="Buscar por nombre o teléfono..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{ width: '220px' }}
+          />
+          <button onClick={() => setShowNuevo(true)} className="btn-mint">
+            <UserPlus size={14} />
+            Agregar
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -290,6 +376,15 @@ export default function ClientesPanel({ businessId }) {
           cliente={selected}
           businessId={businessId}
           onClose={() => { setSelected(null); cargar() }}
+        />
+      )}
+
+      {/* Modal nuevo cliente */}
+      {showNuevo && (
+        <NuevoClienteModal
+          businessId={businessId}
+          onClose={() => setShowNuevo(false)}
+          onCreado={cargar}
         />
       )}
     </div>

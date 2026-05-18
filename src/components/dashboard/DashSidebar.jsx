@@ -1,4 +1,5 @@
-import { LayoutDashboard, Calendar, Users, Scissors, BarChart2, LogOut, Settings, UserCircle } from 'lucide-react'
+import { LayoutDashboard, Calendar, Users, Scissors, BarChart2, LogOut, Settings, UserCircle, Link2, Check } from 'lucide-react'
+import { useState } from 'react'
 
 const NAV_ITEMS = [
   { id: 'inicio',     label: 'Inicio',       Icon: LayoutDashboard },
@@ -15,8 +16,17 @@ function getInitials(name = '') {
 }
 
 export default function DashSidebar({ activeSection, onNavigate, negocio, onSignOut, userEmail }) {
-  const initials = getInitials(negocio?.name)
-  const accent   = negocio?.accent_color ?? '#00FF88'
+  const initials    = getInitials(negocio?.name)
+  const accent      = negocio?.accent_color ?? '#00FF88'
+  const [copied, setCopied] = useState(false)
+
+  function copyLink() {
+    const url = `https://agendamiento-five.vercel.app/${negocio?.slug ?? ''}`
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
 
   return (
     <aside className="dash-sidebar">
@@ -65,6 +75,35 @@ export default function DashSidebar({ activeSection, onNavigate, negocio, onSign
             </span>
           </div>
         </div>
+
+        {/* Botón copiar link de citas */}
+        {negocio?.slug && (
+          <button
+            onClick={copyLink}
+            style={{
+              marginTop: 10,
+              display: 'flex', alignItems: 'center', gap: 7,
+              background: copied ? `${accent}18` : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${copied ? accent + '44' : 'rgba(255,255,255,0.08)'}`,
+              borderRadius: 8, padding: '7px 10px',
+              cursor: 'pointer', width: '100%',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {copied
+              ? <Check size={13} color={accent} />
+              : <Link2 size={13} color="#555" />
+            }
+            <span style={{
+              fontSize: '0.72rem', fontFamily: 'DM Sans, sans-serif',
+              color: copied ? accent : '#555',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              flex: 1, textAlign: 'left',
+            }}>
+              {copied ? '¡Link copiado!' : `turno.app/${negocio.slug}`}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Divider */}
