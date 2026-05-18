@@ -18,7 +18,7 @@ function ProtectedRoute({ children }) {
       }}>
         <span style={{
           width: 24, height: 24, borderRadius: '50%',
-          border: '2px solid #1E1E1E', borderTopcolor: 'var(--accent)',
+          border: '2px solid #1E1E1E', borderTopColor: 'var(--accent)',
           display: 'inline-block', animation: 'spin 0.7s linear infinite'
         }} />
       </div>

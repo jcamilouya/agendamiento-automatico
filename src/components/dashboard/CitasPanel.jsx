@@ -336,7 +336,7 @@ function CitaRow({ cita, index, negocioName, updating, onAction }) {
         {updating ? (
           <div style={{
             width: 16, height: 16, borderRadius: '50%',
-            border: '2px solid transparent', borderTopcolor: 'var(--accent)',
+            border: '2px solid transparent', borderTopColor: 'var(--accent)',
             animation: 'spin 0.7s linear infinite',
           }} />
         ) : (

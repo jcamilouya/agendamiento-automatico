@@ -37,8 +37,16 @@ export default function BookingPage() {
       setNegocio(neg)
 
       // Aplica el color de acento y título del negocio
-      if (neg.accent_color) {
-        document.documentElement.style.setProperty('--accent', neg.accent_color)
+      if (neg.accent_color && /^#[0-9A-Fa-f]{6}$/.test(neg.accent_color)) {
+        const c = neg.accent_color
+        const r = parseInt(c.slice(1, 3), 16)
+        const g = parseInt(c.slice(3, 5), 16)
+        const b = parseInt(c.slice(5, 7), 16)
+        const root = document.documentElement.style
+        root.setProperty('--accent', c)
+        root.setProperty('--accent-rgb', `${r}, ${g}, ${b}`)
+        root.setProperty('--accent-dim', `rgba(${r},${g},${b},0.12)`)
+        root.setProperty('--accent-glow', `0 0 20px rgba(${r},${g},${b},0.3), 0 0 60px rgba(${r},${g},${b},0.1)`)
       }
       document.title = `${neg.name} — TURNO`
 

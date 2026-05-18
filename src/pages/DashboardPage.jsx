@@ -125,22 +125,29 @@ export default function DashboardPage() {
       const mon   = getMonday(new Date())
       const sun   = getSunday(new Date())
 
-      // Primero intenta cargar el negocio del usuario autenticado,
-      // si no tiene (demo), cae al slug fijo
+      // Carga el negocio del usuario autenticado.
+      // Solo el usuario demo (admin@turno.co) cae al slug 'turno-demo'.
       let neg = null
       const { data: ownBiz } = await supabase
         .from('businesses')
         .select('*')
         .eq('owner_id', session.user.id)
-        .single()
+        .maybeSingle()
 
       if (ownBiz) {
         neg = ownBiz
-      } else {
-        const { data: demoBiz, error: negError } = await supabase
-          .from('businesses').select('*').eq('slug', DEMO_SLUG).single()
-        if (negError) throw negError
+      } else if (session.user.email === 'admin@turno.co') {
+        const { data: demoBiz } = await supabase
+          .from('businesses').select('*').eq('slug', DEMO_SLUG).maybeSingle()
         neg = demoBiz
+      } else {
+        // Usuario autenticado sin negocio asociado → redirigir a registro
+        navigate('/register')
+        return
+      }
+      if (!neg) {
+        navigate('/register')
+        return
       }
       setNegocio(neg)
 

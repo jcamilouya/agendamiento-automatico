@@ -82,8 +82,8 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
       const { data: disp } = await supabase.from('availability').select('start_time, end_time')
         .eq('stylist_id', estilista.id).eq('day_of_week', diaSemana).eq('is_active', true).single()
       if (!disp) return
-      const { data: citas }  = await supabase.from('appointments').select('start_time, end_time')
-        .eq('stylist_id', estilista.id).eq('date', fecha).in('status', ['pending', 'confirmed'])
+      const { data: citas }  = await supabase.from('public_booked_slots').select('start_time, end_time')
+        .eq('stylist_id', estilista.id).eq('date', fecha)
       const { data: bloques } = await supabase.from('time_blocks').select('start_time, end_time')
         .eq('stylist_id', estilista.id).eq('date', fecha)
       const esHoy = fecha === new Date().toISOString().split('T')[0]
