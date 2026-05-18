@@ -167,6 +167,14 @@ body {
   from { transform: translateX(0);    opacity: 1; }
   to   { transform: translateX(110%); opacity: 0; }
 }
+@keyframes toastBigIn {
+  from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  to   { transform: translate(-50%, -50%) scale(1);   opacity: 1; }
+}
+@keyframes toastBigOut {
+  from { transform: translate(-50%, -50%) scale(1);   opacity: 1; }
+  to   { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+}
 @keyframes bellPulse {
   0%   { transform: rotate(0deg); }
   20%  { transform: rotate(-12deg); }

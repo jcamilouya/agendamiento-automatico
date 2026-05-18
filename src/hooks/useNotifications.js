@@ -36,18 +36,19 @@ function playChime() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)()
     const now = ctx.currentTime
-    // Two-tone ascending chime: E5 → A5
+    // Tres notas ascendentes: C5 → E5 → G5 (acorde mayor positivo)
     const notes = [
-      { freq: 659, start: 0,    end: 0.55, vol: 0.22 },
-      { freq: 880, start: 0.14, end: 0.75, vol: 0.18 },
+      { freq: 523, start: 0,    end: 0.5,  vol: 0.35 },
+      { freq: 659, start: 0.18, end: 0.65, vol: 0.30 },
+      { freq: 784, start: 0.36, end: 0.9,  vol: 0.25 },
     ]
     notes.forEach(({ freq, start, end, vol }) => {
       const osc = ctx.createOscillator()
       const g   = ctx.createGain()
       osc.type = 'sine'
       osc.frequency.setValueAtTime(freq, now + start)
-      g.gain.setValueAtTime(start === 0 ? vol : 0, now)
-      if (start > 0) g.gain.setValueAtTime(vol, now + start)
+      g.gain.setValueAtTime(0, now)
+      g.gain.setValueAtTime(vol, now + start)
       g.gain.exponentialRampToValueAtTime(0.001, now + end)
       osc.connect(g)
       g.connect(ctx.destination)

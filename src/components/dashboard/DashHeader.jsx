@@ -16,83 +16,153 @@ function getInitials(name = '') {
   return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
 }
 
-// ── Toast individual ──────────────────────────────────────────────────────────
+// ── Toast GRANDE centrado ─────────────────────────────────────────────────────
 
 function NotifToast({ notif, onDismiss }) {
   const [leaving, setLeaving] = useState(false)
+  const [progress, setProgress] = useState(100)
 
   useEffect(() => {
-    const hide = setTimeout(() => setLeaving(true), 5000)
-    const remove = setTimeout(() => onDismiss(notif.id), 5500)
-    return () => { clearTimeout(hide); clearTimeout(remove) }
+    // barra de progreso
+    const interval = setInterval(() => setProgress(p => Math.max(0, p - 1.25)), 75)
+    const hide   = setTimeout(() => setLeaving(true), 8000)
+    const remove = setTimeout(() => onDismiss(notif.id), 8500)
+    return () => { clearInterval(interval); clearTimeout(hide); clearTimeout(remove) }
   }, [])
 
+  function dismiss() { setLeaving(true); setTimeout(() => onDismiss(notif.id), 400) }
+
+  const initials = notif.clientName?.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase() || '?'
+
   return (
-    <div
-      style={{
-        background: '#141414',
-        border: '1px solid #1E1E1E',
-        borderLeft: '3px solid #00FF88',
-        borderRadius: 12,
-        padding: '14px 16px',
-        marginBottom: 10,
-        width: 340,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-        animation: leaving
-          ? 'toastOut 0.4s ease forwards'
-          : 'toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards',
-        cursor: 'pointer',
-      }}
-      onClick={() => { setLeaving(true); setTimeout(() => onDismiss(notif.id), 400) }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <span style={{
-            width: 7, height: 7, borderRadius: '50%',
-            background: '#00FF88',
-            boxShadow: '0 0 6px #00FF88',
-            flexShrink: 0,
-          }} />
-          <span style={{
-            fontFamily: 'Syne, sans-serif', fontWeight: 700,
-            fontSize: '0.82rem', color: '#00FF88',
+    <>
+      {/* Overlay oscuro detrás */}
+      {!leaving && (
+        <div
+          onClick={dismiss}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 999,
+            background: 'rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(3px)',
+            animation: 'fadeIn 0.2s ease',
+          }}
+        />
+      )}
+
+      {/* Card central grande */}
+      <div
+        style={{
+          position: 'fixed',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 1000,
+          width: 'min(420px, calc(100vw - 40px))',
+          background: '#0F0F0F',
+          border: '1px solid rgba(0,255,136,0.35)',
+          borderRadius: 20,
+          overflow: 'hidden',
+          boxShadow: '0 0 0 1px rgba(0,255,136,0.1), 0 40px 80px rgba(0,0,0,0.8), 0 0 60px rgba(0,255,136,0.12)',
+          animation: leaving
+            ? 'toastBigOut 0.35s ease forwards'
+            : 'toastBigIn 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards',
+        }}
+      >
+        {/* Glow superior */}
+        <div style={{
+          height: 2,
+          background: 'linear-gradient(90deg, transparent, #00FF88, transparent)',
+        }} />
+
+        <div style={{ padding: '28px 28px 20px' }}>
+          {/* Badge + cerrar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)',
+              borderRadius: 999, padding: '5px 12px',
+            }}>
+              <span style={{
+                width: 7, height: 7, borderRadius: '50%',
+                background: '#00FF88', boxShadow: '0 0 8px #00FF88',
+                animation: 'pulse-dot 1.2s ease-in-out infinite',
+              }} />
+              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.75rem', color: '#00FF88', letterSpacing: '0.06em' }}>
+                NUEVA CITA
+              </span>
+            </div>
+            <button onClick={dismiss} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#666', cursor: 'pointer', padding: '6px 8px', lineHeight: 1 }}>
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Cliente */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+              background: 'rgba(0,255,136,0.1)', border: '2px solid rgba(0,255,136,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.3rem', color: '#00FF88',
+            }}>
+              {initials}
+            </div>
+            <div>
+              <p style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.25rem', color: '#F5F5F5', marginBottom: 3 }}>
+                {notif.clientName}
+              </p>
+              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.82rem', color: '#666' }}>
+                acaba de reservar una cita
+              </p>
+            </div>
+          </div>
+
+          {/* Detalles */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1fr 1fr',
+            gap: 10, marginBottom: 20,
           }}>
-            Nueva cita
-          </span>
+            {[
+              { label: 'Servicio',  value: notif.serviceName },
+              { label: 'Con',       value: notif.stylistName },
+              { label: 'Fecha',     value: formatDateShort(notif.date) },
+              { label: 'Hora',      value: formatHM(notif.startTime) },
+            ].map(({ label, value }) => (
+              <div key={label} style={{
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 10, padding: '10px 12px',
+              }}>
+                <p style={{ color: '#444', fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 3 }}>{label}</p>
+                <p style={{ color: '#F5F5F5', fontWeight: 600, fontSize: '0.88rem' }}>{value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Botón cerrar */}
+          <button
+            onClick={dismiss}
+            style={{
+              width: '100%', padding: '12px',
+              background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.25)',
+              borderRadius: 10, color: '#00FF88',
+              fontFamily: 'DM Sans, sans-serif', fontWeight: 700, fontSize: '0.88rem',
+              cursor: 'pointer', transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,255,136,0.18)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,255,136,0.1)' }}
+          >
+            Entendido ✓
+          </button>
         </div>
-        <button
-          onClick={e => { e.stopPropagation(); setLeaving(true); setTimeout(() => onDismiss(notif.id), 400) }}
-          style={{ background: 'none', border: 'none', color: '#444', cursor: 'pointer', padding: 0, lineHeight: 1 }}
-        >
-          <X size={14} />
-        </button>
+
+        {/* Barra de progreso */}
+        <div style={{ height: 3, background: '#1A1A1A' }}>
+          <div style={{
+            height: '100%', width: `${progress}%`,
+            background: 'linear-gradient(90deg, #00FF88, #00CC66)',
+            transition: 'width 0.1s linear',
+          }} />
+        </div>
       </div>
-
-      <p style={{
-        fontFamily: 'DM Sans, sans-serif', fontWeight: 600,
-        fontSize: '0.9rem', color: '#F5F5F5', marginBottom: 4,
-      }}>
-        {notif.clientName}
-      </p>
-
-      <p style={{
-        fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem',
-        color: '#888888', marginBottom: 6,
-      }}>
-        {notif.serviceName} · {notif.stylistName}
-      </p>
-
-      <div style={{ display: 'flex', gap: 12 }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'DM Sans, sans-serif', fontSize: '0.73rem', color: '#555' }}>
-          <Calendar size={11} color="#555" />
-          {formatDateShort(notif.date)}
-        </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'DM Sans, sans-serif', fontSize: '0.73rem', color: '#555' }}>
-          <Clock size={11} color="#555" />
-          {formatHM(notif.startTime)}
-        </span>
-      </div>
-    </div>
+    </>
   )
 }
 
