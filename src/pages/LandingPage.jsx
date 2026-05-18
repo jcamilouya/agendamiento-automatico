@@ -2,8 +2,9 @@
 import { useNavigate } from 'react-router-dom'
 import {
   Calendar, MessageCircle, BarChart2, Users,
-  CheckCircle, ArrowRight, Star, Zap, Clock,
+  CheckCircle, ArrowRight, Star, Zap, Clock, LogOut,
 } from 'lucide-react'
+import { useAuth } from '../hooks/useAuth'
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
@@ -59,7 +60,13 @@ function useAnimatedCounter(target, duration = 2000, start = false) {
 
 function Nav() {
   const navigate = useNavigate()
+  const { session, signOut } = useAuth()
   const [scrolled, setScrolled] = useState(false)
+
+  async function handleSignOut() {
+    await signOut()
+    navigate('/', { replace: true })
+  }
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
@@ -86,41 +93,84 @@ function Nav() {
       </span>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-        <button
-          onClick={() => navigate('/login')}
-          style={{
-            background: 'transparent', border: '1px solid #333',
-            color: '#888888', padding: '8px 20px',
-            borderRadius: 8, fontFamily: 'DM Sans, sans-serif',
-            fontSize: '0.85rem', cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={e => { e.target.style.borderColor = '#00FF88'; e.target.style.color = '#F5F5F5' }}
-          onMouseLeave={e => { e.target.style.borderColor = '#333'; e.target.style.color = '#888888' }}
-        >
-          Iniciar sesión
-        </button>
-        <button
-          onClick={() => navigate('/turno-demo')}
-          style={{
-            background: 'var(--accent)', border: 'none',
-            color: '#0A0A0A', padding: '8px 20px',
-            borderRadius: 8, fontFamily: 'DM Sans, sans-serif',
-            fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 0 0 rgba(61,255,168,0)',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.transform = 'scale(1.03)'
-            e.currentTarget.style.boxShadow = '0 0 20px rgba(61,255,168,0.4)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'scale(1)'
-            e.currentTarget.style.boxShadow = '0 0 0 rgba(61,255,168,0)'
-          }}
-        >
-          Ver demo
-        </button>
+        {session ? (
+          <>
+            <span style={{
+              color: '#666', fontSize: '0.78rem',
+              fontFamily: 'DM Sans, sans-serif',
+              display: 'none',
+            }} className="nav-user-email">
+              {session.user.email}
+            </span>
+            <button
+              onClick={handleSignOut}
+              style={{
+                background: 'transparent', border: '1px solid #333',
+                color: '#888888', padding: '8px 16px',
+                borderRadius: 8, fontFamily: 'DM Sans, sans-serif',
+                fontSize: '0.85rem', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF4D4D'; e.currentTarget.style.color = '#FF4D4D' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#333'; e.currentTarget.style.color = '#888888' }}
+            >
+              <LogOut size={14} /> Cerrar sesión
+            </button>
+            <button
+              onClick={() => navigate('/dashboard')}
+              style={{
+                background: 'var(--accent)', border: 'none',
+                color: '#0A0A0A', padding: '8px 20px',
+                borderRadius: 8, fontFamily: 'DM Sans, sans-serif',
+                fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
+            >
+              Ir al Dashboard
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => navigate('/login')}
+              style={{
+                background: 'transparent', border: '1px solid #333',
+                color: '#888888', padding: '8px 20px',
+                borderRadius: 8, fontFamily: 'DM Sans, sans-serif',
+                fontSize: '0.85rem', cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.color = '#F5F5F5' }}
+              onMouseLeave={e => { e.target.style.borderColor = '#333'; e.target.style.color = '#888888' }}
+            >
+              Iniciar sesión
+            </button>
+            <button
+              onClick={() => navigate('/turno-demo')}
+              style={{
+                background: 'var(--accent)', border: 'none',
+                color: '#0A0A0A', padding: '8px 20px',
+                borderRadius: 8, fontFamily: 'DM Sans, sans-serif',
+                fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 0 0 rgba(var(--accent-rgb),0)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'scale(1.03)'
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(var(--accent-rgb),0.4)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 0 0 rgba(var(--accent-rgb),0)'
+              }}
+            >
+              Ver demo
+            </button>
+          </>
+        )}
       </div>
     </nav>
   )

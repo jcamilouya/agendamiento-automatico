@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useRef } from 'react'
-import { Bell, X, CheckCheck, Calendar, Clock, Sun, Moon } from 'lucide-react'
+import { Bell, X, CheckCheck, Calendar, Clock, Sun, Moon, LogOut } from 'lucide-react'
 import { useNotifications, formatDateShort, formatHM, relativeTime } from '../../hooks/useNotifications'
 
 const DIAS   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
@@ -321,7 +321,7 @@ function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose 
 
 // ── Header principal ──────────────────────────────────────────────────────────
 
-export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle }) {
+export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle, onSignOut }) {
   const [open, setOpen] = useState(false)
   const bellRef         = useRef(null)
   const isLight         = theme === 'light'
@@ -391,6 +391,25 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
               : <Sun  size={18} color="#888" />
             }
           </button>
+
+          {/* Cerrar sesión */}
+          {onSignOut && (
+            <button
+              onClick={onSignOut}
+              title="Cerrar sesión"
+              style={{
+                background: isLight ? 'rgba(0,0,0,0.06)' : '#1A1A1A',
+                border: `1px solid ${isLight ? 'rgba(0,0,0,0.1)' : '#252525'}`,
+                borderRadius: 10, padding: 10, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF4D4D'; e.currentTarget.style.background = isLight ? 'rgba(255,77,77,0.06)' : 'rgba(255,77,77,0.08)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = isLight ? 'rgba(0,0,0,0.1)' : '#252525'; e.currentTarget.style.background = isLight ? 'rgba(0,0,0,0.06)' : '#1A1A1A' }}
+            >
+              <LogOut size={18} color="#888" />
+            </button>
+          )}
 
           {/* Campana */}
           <div ref={bellRef} style={{ position: 'relative' }}>

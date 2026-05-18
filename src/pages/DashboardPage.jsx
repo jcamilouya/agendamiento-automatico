@@ -268,7 +268,7 @@ export default function DashboardPage() {
       />
 
       <main className="dash-main">
-        <DashHeader negocio={negocio} pendingCount={pendingCount} theme={theme} onThemeToggle={toggleTheme} />
+        <DashHeader negocio={negocio} pendingCount={pendingCount} theme={theme} onThemeToggle={toggleTheme} onSignOut={handleSignOut} />
 
         <div style={{ padding: '28px 32px' }}>
 

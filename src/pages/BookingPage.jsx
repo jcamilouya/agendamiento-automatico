@@ -87,7 +87,12 @@ export default function BookingPage() {
         end_time: horaFin,
         status: 'pending'
       })
-      if (err) throw err
+      if (err) {
+        if (err.code === '23505') {
+          throw new Error('Ese horario acaba de ser reservado por otra persona. Por favor elige otro.')
+        }
+        throw err
+      }
 
       // Confirmación al cliente — fire-and-forget
       sendWhatsApp(telefono, msgConfirmacion({
