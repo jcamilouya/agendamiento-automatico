@@ -51,6 +51,7 @@ export default function EstilistasPanel({ businessId }) {
   const [form,      setForm]      = useState(initForm)
   const [saving,    setSaving]    = useState(false)
   const fileInputRef               = useRef(null)
+  const nameInputRef               = useRef(null)
   const [toggling,  setToggling]  = useState(null)
   const [error,     setError]     = useState('')
 
@@ -105,7 +106,7 @@ export default function EstilistasPanel({ businessId }) {
   }
 
   async function handleSave() {
-    if (!form.name.trim()) { setError('El nombre es obligatorio'); return }
+    if (!form.name.trim()) { setError('El nombre es obligatorio'); nameInputRef.current?.focus(); nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return }
     setSaving(true); setError('')
     const payload = {
       name:        form.name.trim(),
@@ -193,6 +194,7 @@ export default function EstilistasPanel({ businessId }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <FormGroup label="Nombre *">
                 <input
+                  ref={nameInputRef}
                   className="dash-input"
                   placeholder="Ej: Carlos Mendez"
                   value={form.name}

@@ -634,6 +634,8 @@ body {
   padding: 32px;
   width: 100%;
   max-width: 480px;
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
   animation: fadeInUp 0.2s ease forwards;
   position: relative;
 }

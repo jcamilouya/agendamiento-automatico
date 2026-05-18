@@ -45,6 +45,7 @@ export default function ServiciosPanel({ businessId }) {
   const [form,     setForm]     = useState(initForm)
   const [saving,   setSaving]   = useState(false)
   const fileInputRef              = useRef(null)
+  const nameInputRef              = useRef(null)
   const [toggling, setToggling] = useState(null)
   const [error,    setError]    = useState('')
 
@@ -86,7 +87,7 @@ export default function ServiciosPanel({ businessId }) {
   }
 
   async function handleSave() {
-    if (!form.name.trim())          { setError('El nombre es obligatorio'); return }
+    if (!form.name.trim())          { setError('El nombre es obligatorio'); nameInputRef.current?.focus(); nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return }
     if (!form.duration_minutes)     { setError('La duración es obligatoria'); return }
     if (!form.price)                { setError('El precio es obligatorio'); return }
     const dur = parseInt(form.duration_minutes)
@@ -209,6 +210,7 @@ export default function ServiciosPanel({ businessId }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <FormGroup label="Nombre *">
                 <input
+                  ref={nameInputRef}
                   className="dash-input"
                   placeholder="Ej: Corte + barba"
                   value={form.name}
