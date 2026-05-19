@@ -106,7 +106,13 @@ export default function RegisterPage() {
       const userId = authData.user?.id
       if (!userId) throw new Error('No se pudo crear la cuenta')
 
-      // 2. Crear el negocio
+      // 2. Asegurar sesión activa antes de insertar (signUp puede no devolver sesión si hay confirmación de email)
+      if (!authData.session) {
+        const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password })
+        if (loginErr) throw new Error('Cuenta creada. Revisa tu email para confirmarla y luego inicia sesión.')
+      }
+
+      // 3. Crear el negocio
       const { data: biz, error: bizErr } = await supabase
         .from('businesses')
         .insert({

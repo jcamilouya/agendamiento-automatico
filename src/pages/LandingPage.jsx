@@ -138,7 +138,7 @@ function Nav() {
               onClick={() => navigate('/login')}
               style={{
                 background: 'transparent', border: '1px solid #333',
-                color: '#888888', padding: '8px 20px',
+                color: '#888888', padding: '8px 18px',
                 borderRadius: 8, fontFamily: 'DM Sans, sans-serif',
                 fontSize: '0.85rem', cursor: 'pointer',
                 transition: 'all 0.2s ease',
@@ -150,6 +150,20 @@ function Nav() {
             </button>
             <button
               onClick={() => navigate('/turno-demo')}
+              style={{
+                background: 'transparent', border: '1px solid #333',
+                color: '#888888', padding: '8px 18px',
+                borderRadius: 8, fontFamily: 'DM Sans, sans-serif',
+                fontSize: '0.85rem', cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.color = '#F5F5F5' }}
+              onMouseLeave={e => { e.target.style.borderColor = '#333'; e.target.style.color = '#888888' }}
+            >
+              Ver demo
+            </button>
+            <button
+              onClick={() => navigate('/register')}
               style={{
                 background: 'var(--accent)', border: 'none',
                 color: '#0A0A0A', padding: '8px 20px',
@@ -167,7 +181,7 @@ function Nav() {
                 e.currentTarget.style.boxShadow = '0 0 0 rgba(var(--accent-rgb),0)'
               }}
             >
-              Ver demo
+              Crear perfil
             </button>
           </>
         )}
@@ -348,7 +362,7 @@ function Hero() {
           transition: 'opacity 0.6s ease 0.15s, transform 0.6s ease 0.15s',
         }}>
           <button
-            onClick={() => navigate('/turno-demo')}
+            onClick={() => navigate('/register')}
             style={{
               background: 'var(--accent)', border: 'none',
               color: '#0A0A0A', padding: '14px 32px',
@@ -367,7 +381,22 @@ function Hero() {
               e.currentTarget.style.boxShadow = '0 0 40px rgba(61,255,168,0.25)'
             }}
           >
-            Probar demo gratis <ArrowRight size={16} />
+            Crear mi perfil gratis <ArrowRight size={16} />
+          </button>
+          <button
+            onClick={() => navigate('/turno-demo')}
+            style={{
+              background: 'rgba(10,10,10,0.4)', border: '1px solid rgba(255,255,255,0.15)',
+              color: '#F5F5F5', padding: '14px 32px',
+              borderRadius: 10, fontFamily: 'DM Sans, sans-serif',
+              fontSize: '1rem', cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              backdropFilter: 'blur(8px)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+          >
+            Probar demo
           </button>
           <button
             onClick={() => navigate('/login')}
@@ -866,7 +895,7 @@ function Pricing() {
               </ul>
 
               <button
-                onClick={() => navigate('/turno-demo')}
+                onClick={() => navigate('/register')}
                 style={{
                   width: '100%',
                   background: p.highlight ? '#00FF88' : 'transparent',
