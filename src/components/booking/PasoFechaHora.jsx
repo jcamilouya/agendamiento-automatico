@@ -81,13 +81,23 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
       const diaSemana = new Date(fecha + 'T12:00:00').getDay()
       const { data: disp } = await supabase.from('availability').select('start_time, end_time')
         .eq('stylist_id', estilista.id).eq('day_of_week', diaSemana).eq('is_active', true).single()
-      if (!disp) return
-      const { data: citas }  = await supabase.from('public_booked_slots').select('start_time, end_time')
-        .eq('stylist_id', estilista.id).eq('date', fecha)
+      if (!disp) { setCargando(false); return }
+
+      // Intentar con la vista segura; si falla, no bloquear el calendario
+      let citasData = []
+      try {
+        const { data, error } = await supabase.from('public_booked_slots').select('start_time, end_time')
+          .eq('stylist_id', estilista.id).eq('date', fecha)
+        if (!error && data) citasData = data
+      } catch (_) { /* vista no disponible — continuar sin bloquear slots */ }
+
       const { data: bloques } = await supabase.from('time_blocks').select('start_time, end_time')
         .eq('stylist_id', estilista.id).eq('date', fecha)
       const esHoy = fecha === new Date().toISOString().split('T')[0]
-      setSlots(generarSlots(disp, citas || [], bloques || [], servicio.duration_minutes, esHoy))
+      setSlots(generarSlots(disp, citasData, bloques || [], servicio.duration_minutes, esHoy))
+    } catch (err) {
+      console.error('[PasoFechaHora] cargarSlots:', err)
+      setSlots([])
     } finally { setCargando(false) }
   }
 
