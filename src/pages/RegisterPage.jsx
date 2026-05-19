@@ -131,6 +131,31 @@ export default function RegisterPage() {
         .single()
       if (bizErr) throw bizErr
 
+      // 4. Crear estilista por defecto
+      const { data: estilista, error: estErr } = await supabase
+        .from('stylists')
+        .insert({ business_id: biz.id, name: tipo.staffLabel, is_active: true })
+        .select()
+        .single()
+      if (estErr) throw estErr
+
+      // 5. Crear servicios por defecto
+      await supabase.from('services').insert(
+        tipo.defaultServices.map(s => ({ ...s, business_id: biz.id, is_active: true }))
+      )
+
+      // 6. Disponibilidad L-S 9am-6pm
+      const diasLaborales = [1, 2, 3, 4, 5, 6] // lunes a sábado
+      await supabase.from('availability').insert(
+        diasLaborales.map(day => ({
+          stylist_id: estilista.id,
+          day_of_week: day,
+          start_time: '09:00',
+          end_time: '18:00',
+          is_active: true,
+        }))
+      )
+
       setNegocioCreado(biz)
       irPaso(4)
     } catch (err) {
