@@ -37,6 +37,7 @@ export default function RegisterPage() {
   const [password2, setPassword2] = useState('')
   const [aceptaTerminos, setAceptaTerminos] = useState(false)
   const [negocioCreado, setNegocioCreado] = useState(null)
+  const [needsConfirm,  setNeedsConfirm]  = useState(false)
 
   const slugTimer = useRef(null)
 
@@ -100,19 +101,35 @@ export default function RegisterPage() {
       const { data: authData, error: authErr } = await supabase.auth.signUp({
         email,
         password,
+        options: { emailRedirectTo: `${window.location.origin}/login` },
       })
       if (authErr) throw authErr
 
-      const userId = authData.user?.id
-      if (!userId) throw new Error('No se pudo crear la cuenta')
+      if (!authData.user?.id) throw new Error('No se pudo crear la cuenta')
 
-      // 2. Asegurar sesión activa antes de insertar (signUp puede no devolver sesión si hay confirmación de email)
-      if (!authData.session) {
-        const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password })
-        if (loginErr) throw new Error('Cuenta creada. Revisa tu email para confirmarla y luego inicia sesión.')
+      // 2. Iniciar sesión para obtener JWT activo antes del INSERT en businesses.
+      //    Si la confirmación de email está activa en Supabase, esto falla y mostramos
+      //    una pantalla de "revisa tu correo" en lugar de un error genérico.
+      const { data: loginData, error: loginErr } = await supabase.auth.signInWithPassword({ email, password })
+      if (loginErr) {
+        if (loginErr.message === 'Email not confirmed') {
+          setNeedsConfirm(true)
+          irPaso(4)
+          return
+        }
+        throw loginErr
       }
 
+      // El owner_id DEBE venir de la sesión autenticada, no de signUp(): si el email
+      // ya existía, signUp() devuelve un usuario "fantasma" con un id fabricado distinto
+      // del real, y entonces owner_id != auth.uid() → la policy RLS rechaza el INSERT.
+      const userId = loginData.session?.user?.id ?? loginData.user?.id
+      if (!userId) throw new Error('No se pudo iniciar sesión tras el registro')
+
       // 3. Crear el negocio
+      const trialEndsAt = new Date()
+      trialEndsAt.setDate(trialEndsAt.getDate() + 30)
+
       const { data: biz, error: bizErr } = await supabase
         .from('businesses')
         .insert({
@@ -126,6 +143,7 @@ export default function RegisterPage() {
           address: direccion.trim(),
           is_active: true,
           subscription_plan: 'trial',
+          trial_ends_at: trialEndsAt.toISOString(),
         })
         .select()
         .single()
@@ -184,7 +202,7 @@ export default function RegisterPage() {
       {/* Logo */}
       <div style={{ marginBottom: '32px', textAlign: 'center' }}>
         <h1 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '2rem', color: '#F5F5F5', margin: 0, letterSpacing: '-0.02em' }}>
-          TURNO
+          TURNOTT
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', marginTop: '4px' }}>
           Tu negocio en línea en menos de 3 minutos
@@ -293,6 +311,7 @@ export default function RegisterPage() {
 
             <button
               onClick={() => { if (validarPaso1()) irPaso(2) }}
+              disabled={!tipo}
               style={{
                 width: '100%',
                 padding: '14px',
@@ -303,6 +322,7 @@ export default function RegisterPage() {
                 fontSize: '0.95rem',
                 border: 'none',
                 cursor: tipo ? 'pointer' : 'not-allowed',
+                opacity: tipo ? 1 : 0.5,
                 transition: 'all 0.25s ease',
                 fontFamily: 'DM Sans, sans-serif',
               }}
@@ -458,8 +478,59 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* ── PASO 4: ¡Listo! ── */}
-        {paso === 4 && negocioCreado && (
+        {/* ── PASO 4a: Confirma tu correo ── */}
+        {paso === 4 && needsConfirm && (
+          <div style={{ animation: 'fadeSlideIn 0.3s ease', textAlign: 'center' }}>
+            <div style={{
+              width: '72px', height: '72px', borderRadius: '50%',
+              background: 'rgba(0,200,255,0.1)', border: '2px solid rgba(0,200,255,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 20px', fontSize: '2.2rem',
+              boxShadow: '0 0 40px rgba(0,200,255,0.15)',
+            }}>
+              📧
+            </div>
+
+            <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.4rem', color: '#F5F5F5', marginBottom: '8px' }}>
+              Revisa tu correo
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginBottom: '24px', lineHeight: 1.6 }}>
+              Te enviamos un enlace de confirmación a<br/>
+              <span style={{ color: '#F5F5F5', fontWeight: 600 }}>{email}</span>
+            </p>
+
+            <div style={{
+              background: 'rgba(0,200,255,0.05)',
+              border: '1px solid rgba(0,200,255,0.2)',
+              borderRadius: '12px', padding: '16px 20px', marginBottom: '24px', textAlign: 'left',
+            }}>
+              {['Abre el correo que te enviamos', 'Haz clic en el enlace de confirmación', 'Vuelve e inicia sesión con tu cuenta'].map((step, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: i < 2 ? 12 : 0 }}>
+                  <span style={{
+                    width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                    background: 'rgba(0,200,255,0.15)', border: '1px solid rgba(0,200,255,0.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.7rem', fontWeight: 700, color: 'rgba(0,200,255,0.9)',
+                  }}>{i + 1}</span>
+                  <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', fontFamily: 'DM Sans, sans-serif' }}>{step}</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => navigate('/login')}
+              style={{ ...btnPrimaryStyle, background: acento }}
+            >
+              Ir a Iniciar sesión
+            </button>
+            <p style={{ marginTop: 14, color: 'rgba(255,255,255,0.25)', fontSize: '0.75rem', fontFamily: 'DM Sans, sans-serif' }}>
+              ¿No llegó? Revisa la carpeta de spam
+            </p>
+          </div>
+        )}
+
+        {/* ── PASO 4b: ¡Listo! ── */}
+        {paso === 4 && !needsConfirm && negocioCreado && (
           <div style={{ animation: 'fadeSlideIn 0.3s ease', textAlign: 'center' }}>
             <div style={{
               width: '72px', height: '72px', borderRadius: '50%',
@@ -481,35 +552,24 @@ export default function RegisterPage() {
             <div style={{
               background: 'rgba(255,255,255,0.04)',
               border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '12px',
-              padding: '16px 20px',
-              marginBottom: '24px',
-              wordBreak: 'break-all',
+              borderRadius: '12px', padding: '16px 20px', marginBottom: '24px', wordBreak: 'break-all',
             }}>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Tu link de citas
               </p>
               <p style={{ color: acento, fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>
-                agendamiento-five.vercel.app/{negocioCreado.slug}
+                turnott.com/{negocioCreado.slug}
               </p>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button
-                onClick={() => navigate('/dashboard')}
-                style={{ ...btnPrimaryStyle, background: acento }}
-              >
+              <button onClick={() => navigate('/dashboard')} style={{ ...btnPrimaryStyle, background: acento }}>
                 <Store size={16} style={{ display: 'inline', marginRight: '6px' }} />
                 Ir a mi dashboard
               </button>
               <button
                 onClick={() => window.open(`/${negocioCreado.slug}`, '_blank')}
-                style={{
-                  ...btnPrimaryStyle,
-                  background: 'transparent',
-                  color: '#F5F5F5',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                }}
+                style={{ ...btnPrimaryStyle, background: 'transparent', color: '#F5F5F5', border: '1px solid rgba(255,255,255,0.15)' }}
               >
                 Ver mi página de clientes ↗
               </button>
