@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { findPromo } from '../../lib/promos'
 
 const DIAS  = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -17,16 +18,13 @@ function formatHora(t) {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'pm' : 'am'}`
 }
 
-function tipoPromo(tiempo) {
-  const h = parseInt(tiempo.split(':')[0])
-  if (h >= 9 && h <= 10)  return 'mañana'
-  if (h >= 12 && h <= 13) return 'mediodia'
-  return null
-}
-
-const PROMO_CONFIG = {
-  mañana:   { label: '⭐ Mañana',   color: '#F59E0B', bg: '#1C1500', border: '#78350F' },
-  mediodia: { label: '🌅 Mediodía', color: '#A855F7', bg: '#1A0A2E', border: '#4C1D95' },
+// Convierte un hex en rgba con alpha — para fondos y bordes derivados del color de la promo.
+function hexToRgba(hex, alpha) {
+  if (!hex || !hex.startsWith('#')) return `rgba(245,158,11,${alpha})`
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
 }
 
 function generarSlots(disp, citas, bloques, duracion, esHoy) {
@@ -47,12 +45,13 @@ function generarSlots(disp, citas, bloques, duracion, esHoy) {
   return slots
 }
 
-export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
+export default function PasoFechaHora({ seleccion, promociones = [], businessId, onSeleccionar, onVolver }) {
   const hoy = new Date()
   const [mes, setMes]           = useState(new Date(hoy.getFullYear(), hoy.getMonth(), 1))
   const [fechaSel, setFechaSel] = useState(null)
   const [slots, setSlots]       = useState([])
   const [diasDisp, setDiasDisp] = useState([])
+  const [dispCargada, setDispCargada] = useState(false)
   const [cargando, setCargando] = useState(false)
   const [hoveredDayIdx, setHoveredDayIdx] = useState(null)
 
@@ -66,9 +65,13 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
   const { servicio, estilista } = seleccion
 
   useEffect(() => {
+    setDispCargada(false)
     supabase.from('availability').select('day_of_week')
       .eq('stylist_id', estilista.id).eq('is_active', true)
-      .then(({ data }) => data && setDiasDisp(data.map(d => d.day_of_week)))
+      .then(({ data }) => {
+        setDiasDisp(data ? data.map(d => d.day_of_week) : [])
+        setDispCargada(true)
+      })
   }, [estilista.id])
 
   useEffect(() => {
@@ -93,8 +96,22 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
 
       const { data: bloques } = await supabase.from('time_blocks').select('start_time, end_time')
         .eq('stylist_id', estilista.id).eq('date', fecha)
-      const esHoy = fecha === new Date().toISOString().split('T')[0]
-      setSlots(generarSlots(disp, citasData, bloques || [], servicio.duration_minutes, esHoy))
+
+      // blocked_slots — bloqueos por negocio (tabla creada en T6 SQL)
+      let bSlots = []
+      try {
+        const { data: bs } = await supabase.from('blocked_slots').select('time_start, time_end')
+          .eq('business_id', businessId).eq('date', fecha)
+        if (bs) bSlots = bs.map(b => ({ start_time: b.time_start, end_time: b.time_end }))
+      } catch (_) { /* tabla aún no existe — ignorar */ }
+
+      // OJO: usar la fecha LOCAL, no toISOString() (que da UTC). En Colombia (UTC-5)
+      // después de las 7pm la fecha UTC ya es "mañana", lo que rompía el filtro de
+      // horas pasadas: hoy mostraba horas vencidas y mañana se quedaba sin slots.
+      const n = new Date()
+      const hoyLocal = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
+      const esHoy = fecha === hoyLocal
+      setSlots(generarSlots(disp, citasData, [...(bloques || []), ...bSlots], servicio.duration_minutes, esHoy))
     } catch (err) {
       console.error('[PasoFechaHora] cargarSlots:', err)
       setSlots([])
@@ -159,6 +176,17 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
       <p style={{ color: '#888888', fontSize: '0.875rem', marginBottom: '24px' }}>
         {estilista.name} · {servicio.name} · {servicio.duration_minutes} min
       </p>
+
+      {dispCargada && diasDisp.length === 0 && (
+        <div style={{
+          background: '#1C1500', border: '1px solid #78350F',
+          color: '#F59E0B', borderRadius: '12px', padding: '14px 16px',
+          fontSize: '0.85rem', marginBottom: '16px',
+          fontFamily: 'DM Sans, sans-serif',
+        }}>
+          Este negocio todavía no ha configurado horarios de atención. Por favor contáctalo por WhatsApp para agendar.
+        </div>
+      )}
 
       {/* Calendario */}
       <div style={{ background: '#111111', border: '1px solid #1E1E1E', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
@@ -256,21 +284,28 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
         </div>
       </div>
 
-      {/* Leyenda de promos */}
-      {fechaSel && !cargando && slots.length > 0 && (
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
-          {Object.entries(PROMO_CONFIG).map(([key, cfg]) => (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: cfg.color }} />
-              <span style={{ color: '#666666', fontSize: '0.72rem' }}>{cfg.label} — Tarifa especial</span>
+      {/* Leyenda de promos del día seleccionado */}
+      {fechaSel && !cargando && slots.length > 0 && (() => {
+        const dow = new Date(fechaSel + 'T12:00:00').getDay()
+        const promosDelDia = promociones.filter(p => p.is_active && (p.day_of_week === null || p.day_of_week === dow))
+        if (promosDelDia.length === 0) return null
+        return (
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
+            {promosDelDia.map(p => (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: p.color || '#F59E0B' }} />
+                <span style={{ color: '#666666', fontSize: '0.72rem' }}>
+                  {p.label} — {Number(p.discount_percent)}% off
+                </span>
+              </div>
+            ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)' }} />
+              <span style={{ color: '#666666', fontSize: '0.72rem' }}>Disponible</span>
             </div>
-          ))}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)' }} />
-            <span style={{ color: '#666666', fontSize: '0.72rem' }}>Disponible</span>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Slots de hora */}
       {fechaSel && (
@@ -282,8 +317,8 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
           ) : (
             <div className="slots-grid">
               {slots.map(slot => {
-                const promo = slot.disponible ? tipoPromo(slot.tiempo) : null
-                const cfg   = promo ? PROMO_CONFIG[promo] : null
+                const promo = slot.disponible ? findPromo(promociones, fechaSel, slot.tiempo) : null
+                const promoColor = promo?.color || '#F59E0B'
 
                 let borderColor = '#1E1E1E'
                 let bgColor     = '#111111'
@@ -291,8 +326,9 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
 
                 if (!slot.disponible) {
                   borderColor = '#111111'; bgColor = '#0D0D0D'; textColor = '#2A2A2A'
-                } else if (cfg) {
-                  borderColor = cfg.border; bgColor = cfg.bg
+                } else if (promo) {
+                  borderColor = hexToRgba(promoColor, 0.4)
+                  bgColor     = hexToRgba(promoColor, 0.08)
                 }
 
                 return (
@@ -321,12 +357,12 @@ export default function PasoFechaHora({ seleccion, onSeleccionar, onVolver }) {
                     }}>
                       {formatHora(slot.tiempo)}
                     </span>
-                    {cfg && (
+                    {promo && (
                       <span style={{
                         fontSize: '0.6rem', fontWeight: 700,
-                        color: cfg.color, letterSpacing: '0.03em'
+                        color: promoColor, letterSpacing: '0.03em'
                       }}>
-                        {cfg.label}
+                        -{Number(promo.discount_percent)}% {promo.label}
                       </span>
                     )}
                     {!slot.disponible && (
