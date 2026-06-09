@@ -28,7 +28,8 @@ function Avatar({ nombre, foto }) {
   )
 }
 
-export default function PasoEstilista({ estilistas, onSeleccionar, onVolver }) {
+export default function PasoEstilista({ estilistas, staffLabel = 'profesional', onSeleccionar, onVolver }) {
+  const labelLower = staffLabel.toLowerCase()
   return (
     <div>
       <button onClick={onVolver} style={{ background: 'none', border: 'none', color: '#888888', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '20px', padding: 0 }}>
@@ -37,7 +38,7 @@ export default function PasoEstilista({ estilistas, onSeleccionar, onVolver }) {
       </button>
 
       <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.5rem', color: '#F5F5F5', marginBottom: '6px' }}>
-        Elige tu estilista
+        Elige tu {labelLower}
       </h2>
       <p style={{ color: '#888888', fontSize: '0.875rem', marginBottom: '24px' }}>
         ¿Con quién quieres tu turno?
@@ -76,7 +77,7 @@ export default function PasoEstilista({ estilistas, onSeleccionar, onVolver }) {
               El primero disponible
             </p>
             <p style={{ color: '#666666', fontSize: '0.78rem', margin: 0 }}>
-              Te asignamos al barbero con cupo más próximo
+              Te asignamos al {labelLower} con cupo más próximo
             </p>
           </div>
           <button

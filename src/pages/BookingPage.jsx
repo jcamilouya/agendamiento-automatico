@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { sendWhatsApp, msgConfirmacion, msgNuevaCita, normalizePhone } from '../lib/whatsapp'
 import { findPromo, applyDiscount } from '../lib/promos'
+import { BUSINESS_TYPES } from '../config/businessTypes'
 import PasoServicio from '../components/booking/PasoServicio'
 import PasoEstilista from '../components/booking/PasoEstilista'
 import PasoFechaHora from '../components/booking/PasoFechaHora'
@@ -280,6 +281,7 @@ export default function BookingPage() {
           <div className="paso-animado" key="p2">
             <PasoEstilista
               estilistas={estilistas}
+              staffLabel={BUSINESS_TYPES[negocio?.business_type]?.staffLabel || 'profesional'}
               onSeleccionar={(est) => { setSeleccion(p => ({ ...p, estilista: est })); setPaso(3) }}
               onVolver={() => setPaso(1)}
             />
