@@ -4,6 +4,7 @@ import {
   ResponsiveContainer, Cell,
 } from 'recharts'
 import { supabase } from '../../lib/supabase'
+import { formatCurrency } from '../../lib/format'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -11,14 +12,8 @@ function toYMD(d) {
   return d.toISOString().split('T')[0]
 }
 
-function formatCOP(v) {
-  if (v >= 1_000_000) return '$' + (v / 1_000_000).toFixed(1) + 'M'
-  if (v >= 1_000)     return '$' + Math.round(v / 1_000) + 'k'
-  return '$' + Math.round(v).toLocaleString('es-CO')
-}
-
 function formatCOPFull(v) {
-  return '$' + Math.round(v).toLocaleString('es-CO')
+  return '$' + Math.round(Number(v ?? 0)).toLocaleString('es-CO')
 }
 
 const tooltipStyle = {
@@ -61,7 +56,7 @@ function buildKPIs(data) {
   const total     = data.length
   const completed = data.filter(a => a.status === 'completed')
   const cancelled = data.filter(a => a.status === 'cancelled').length
-  const ingresos  = completed.reduce((s, a) => s + Number(a.services?.price ?? 0), 0)
+  const ingresos  = completed.reduce((s, a) => s + Number(a.final_price ?? a.services?.price ?? 0), 0)
   const ticket    = completed.length > 0 ? ingresos / completed.length : 0
   const cancelRate = total > 0 ? Math.round((cancelled / total) * 100) : 0
   return { ingresos, total, ticket, cancelRate, completedCount: completed.length }
@@ -77,7 +72,7 @@ function buildTrend(data, period) {
       const d   = new Date(a.date + 'T12:00:00')
       const key = labels[d.getDay() === 0 ? 6 : d.getDay() - 1]
       map[key].citas++
-      if (a.status === 'completed') map[key].ingresos += Number(a.services?.price ?? 0)
+      if (a.status === 'completed') map[key].ingresos += Number(a.final_price ?? a.services?.price ?? 0)
     })
     return labels.map(l => map[l])
   }
@@ -95,7 +90,7 @@ function buildTrend(data, period) {
       const entry = days.find(r => r.ymd === a.date)
       if (entry) {
         entry.citas++
-        if (a.status === 'completed') entry.ingresos += Number(a.services?.price ?? 0)
+        if (a.status === 'completed') entry.ingresos += Number(a.final_price ?? a.services?.price ?? 0)
       }
     })
     return days.map(({ label, citas, ingresos }) => ({ label, citas, ingresos }))
@@ -116,7 +111,7 @@ function buildTrend(data, period) {
     const week = weeks.find(w => a.date >= w.startYmd && a.date <= w.endYmd)
     if (week) {
       week.citas++
-      if (a.status === 'completed') week.ingresos += Number(a.services?.price ?? 0)
+      if (a.status === 'completed') week.ingresos += Number(a.final_price ?? a.services?.price ?? 0)
     }
   })
   return weeks.map(({ label, citas, ingresos }) => ({ label, citas, ingresos }))
@@ -129,7 +124,7 @@ function buildServiciosData(data) {
     const name = a.services?.name ?? 'Sin servicio'
     if (!map[name]) map[name] = { nombre: name, citas: 0, ingresos: 0 }
     map[name].citas++
-    if (a.status === 'completed') map[name].ingresos += Number(a.services?.price ?? 0)
+    if (a.status === 'completed') map[name].ingresos += Number(a.final_price ?? a.services?.price ?? 0)
   })
   return Object.values(map).sort((a, b) => b.citas - a.citas).slice(0, 6)
 }
@@ -141,7 +136,7 @@ function buildStylistsData(data) {
     const name = a.stylists?.name ?? 'Sin estilista'
     if (!map[name]) map[name] = { nombre: name, citas: 0, ingresos: 0 }
     map[name].citas++
-    if (a.status === 'completed') map[name].ingresos += Number(a.services?.price ?? 0)
+    if (a.status === 'completed') map[name].ingresos += Number(a.final_price ?? a.services?.price ?? 0)
   })
   return Object.values(map).sort((a, b) => b.citas - a.citas)
 }
@@ -289,7 +284,7 @@ export default function GraficosPanel({ businessId }) {
       const { startDate, endDate } = getDateRange(p)
       const { data, error } = await supabase
         .from('appointments')
-        .select('date, start_time, status, client_phone, stylists(id, name), services(id, name, price)')
+        .select('date, start_time, status, client_phone, final_price, stylists(id, name), services(id, name, price)')
         .eq('business_id', businessId)
         .gte('date', startDate)
         .lte('date', endDate)
@@ -385,8 +380,8 @@ export default function GraficosPanel({ businessId }) {
 
       {/* KPI mini-cards */}
       <div className="report-kpi-grid" style={{ marginBottom: 24 }}>
-        <MiniKPI label="Ingresos del período"   value={formatCOP(kpis.ingresos)}      color="var(--accent)" />
-        <MiniKPI label="Ticket promedio"         value={formatCOP(kpis.ticket)}        sub={`${kpis.completedCount} completadas`} />
+        <MiniKPI label="Ingresos del período"   value={formatCurrency(kpis.ingresos)}      color="var(--accent)" />
+        <MiniKPI label="Ticket promedio"         value={formatCurrency(kpis.ticket)}        sub={`${kpis.completedCount} completadas`} />
         <MiniKPI label="Total citas"             value={String(kpis.total)} />
         <MiniKPI
           label="Tasa de cancelación"
@@ -488,7 +483,7 @@ export default function GraficosPanel({ businessId }) {
                 max={maxServicio}
                 color="var(--accent)"
                 delay={300 + i * 80}
-                sub={formatCOP(s.ingresos) + ' generados'}
+                sub={formatCurrency(s.ingresos) + ' generados'}
               />
             ))
           )}
@@ -514,7 +509,7 @@ export default function GraficosPanel({ businessId }) {
                 max={maxEstilista}
                 color="#F59E0B"
                 delay={400 + i * 80}
-                sub={formatCOP(s.ingresos) + ' generados'}
+                sub={formatCurrency(s.ingresos) + ' generados'}
               />
             ))
           )}

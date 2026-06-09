@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useRef } from 'react'
 import { Plus, X, Pencil, Users, TrendingUp, Upload, Camera } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { formatCurrency } from '../../lib/format'
 
 const AVATAR_COLORS = [
   { bg: '#0D3320', text: 'var(--accent)' },
@@ -11,12 +12,6 @@ const AVATAR_COLORS = [
 ]
 
 function toYMD(d) { return d.toISOString().split('T')[0] }
-
-function formatCOP(v) {
-  if (v >= 1_000_000) return '$' + (v / 1_000_000).toFixed(1) + 'M'
-  if (v >= 1_000)     return '$' + Math.round(v / 1_000) + 'k'
-  return '$' + Math.round(v)
-}
 
 function initForm() {
   return { name: '', specialties: '', photo_url: '' }
@@ -72,7 +67,7 @@ export default function EstilistasPanel({ businessId }) {
 
       supabase
         .from('appointments')
-        .select('stylist_id, status, services(price)')
+        .select('stylist_id, status, final_price, services(price)')
         .eq('business_id', businessId)
         .gte('date', since30),
     ])
@@ -87,7 +82,7 @@ export default function EstilistasPanel({ businessId }) {
       map[key].total++
       if (a.status === 'completed') {
         map[key].completed++
-        map[key].ingresos += Number(a.services?.price ?? 0)
+        map[key].ingresos += Number(a.final_price ?? a.services?.price ?? 0)
       }
       if (a.status === 'cancelled') map[key].cancelled++
     })
@@ -373,7 +368,7 @@ function StylistCard({ stylist, index, stats, toggling, onEdit, onToggle }) {
             color="#F5F5F5"
           />
           <StatMini
-            value={formatCOP(stats.ingresos)}
+            value={formatCurrency(stats.ingresos)}
             label="ingresos"
             color="var(--accent)"
           />

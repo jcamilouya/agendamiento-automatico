@@ -84,6 +84,23 @@ export const BUSINESS_TYPES = {
       { name: 'Piercing', duration_minutes: 30, price: 40000, category: 'PIERCING' },
     ],
   },
+  marketing_agency: {
+    id: 'marketing_agency',
+    name: 'Agencia de Marketing',
+    emoji: '📸',
+    description: 'Contenido, reels, foto y video para tu marca',
+    accentColor: '#60A5FA',
+    gradientTo: '#030B18',
+    staffLabel: 'Creator',
+    staffLabelPlural: 'Creators',
+    bookingTitle: '¿Qué sesión agendamos?',
+    stepLabels: ['Servicio', 'Creator', 'Fecha y hora', 'Tus datos'],
+    defaultServices: [
+      { name: 'Sesión de reels', duration_minutes: 120, price: 250000, category: 'VIDEO' },
+      { name: 'Fotografía de producto', duration_minutes: 90, price: 180000, category: 'FOTO' },
+      { name: 'Pack mensual redes', duration_minutes: 240, price: 600000, category: 'PACKS' },
+    ],
+  },
 }
 
 export const BUSINESS_TYPE_LIST = Object.values(BUSINESS_TYPES)

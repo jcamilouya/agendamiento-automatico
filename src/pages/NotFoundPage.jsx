@@ -35,7 +35,7 @@ export default function NotFoundPage() {
         </h1>
 
         <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '28px' }}>
-          El link que seguiste no es válido o este negocio ya no está disponible en TURNO.
+          El link que seguiste no es válido o este negocio ya no está disponible en TURNOTT.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

@@ -1,6 +1,19 @@
 ﻿import { ChevronLeft, Clock } from 'lucide-react'
 
-function Avatar({ nombre }) {
+function Avatar({ nombre, foto }) {
+  if (foto) {
+    return (
+      <img
+        src={foto}
+        alt={nombre}
+        style={{
+          width: '44px', height: '44px', borderRadius: '50%',
+          objectFit: 'cover', flexShrink: 0,
+          border: '1px solid rgba(var(--accent-rgb),0.25)',
+        }}
+      />
+    )
+  }
   return (
     <div style={{
       width: '44px', height: '44px', borderRadius: '50%',
@@ -101,7 +114,7 @@ export default function PasoEstilista({ estilistas, onSeleccionar, onVolver }) {
               e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
             }}
           >
-            <Avatar nombre={est.name} />
+            <Avatar nombre={est.name} foto={est.photo_url} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ color: '#F5F5F5', fontWeight: 600, margin: '0 0 6px', fontSize: '0.95rem' }}>
                 {est.name}

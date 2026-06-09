@@ -2,6 +2,7 @@
 import { useNavigate, Navigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import { isSuperAdmin, SUPER_ADMIN_EMAIL } from '../config/admin'
 
 export default function LoginPage() {
   const { session, loading } = useAuth()
@@ -14,7 +15,9 @@ export default function LoginPage() {
   const [focusEmail, setFocusEmail] = useState(false)
   const [focusPass, setFocusPass]   = useState(false)
 
-  if (!loading && session) return <Navigate to="/dashboard" replace />
+  if (!loading && session) {
+    return <Navigate to={isSuperAdmin(session) ? '/admin' : '/dashboard'} replace />
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -23,11 +26,15 @@ export default function LoginPage() {
     try {
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
       if (authError) throw authError
-      navigate('/dashboard')
+      navigate(email === SUPER_ADMIN_EMAIL ? '/admin' : '/dashboard')
     } catch (err) {
-      setError(err.message === 'Invalid login credentials'
-        ? 'Email o contraseña incorrectos'
-        : err.message)
+      const msg = err.message ?? ''
+      setError(
+        msg === 'Invalid login credentials'                      ? 'Email o contraseña incorrectos' :
+        msg.includes('fetch') || msg.includes('NetworkError')   ? 'Sin conexión. Verifica tu internet e intenta de nuevo.' :
+        msg === 'Email not confirmed'                            ? 'Confirma tu email antes de entrar.' :
+        'Algo salió mal. Intenta de nuevo.'
+      )
     } finally {
       setSubmitting(false)
     }
@@ -86,7 +93,7 @@ export default function LoginPage() {
               fontFamily: 'Syne, sans-serif', fontWeight: 800,
               fontSize: '2rem', color: '#F5F5F5', letterSpacing: '-0.5px',
             }}>
-              TURNO
+              TURNOTT
             </span>
             <span style={{
               width: 10, height: 10, borderRadius: '50%',

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Calendar, Users, Scissors, BarChart2, LogOut, Settings, UserCircle, Link2, Check } from 'lucide-react'
+import { LayoutDashboard, Calendar, Users, Scissors, BarChart2, LogOut, Settings, UserCircle, Link2, Check, Clock } from 'lucide-react'
 import { useState } from 'react'
 
 const NAV_ITEMS = [
@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { id: 'clientes',   label: 'Clientes',     Icon: UserCircle      },
   { id: 'estilistas', label: 'Equipo',       Icon: Users           },
   { id: 'servicios',  label: 'Servicios',    Icon: Scissors        },
+  { id: 'horarios',   label: 'Horarios',     Icon: Clock           },
   { id: 'reportes',   label: 'Reportes',     Icon: BarChart2       },
   { id: 'ajustes',    label: 'Personalizar', Icon: Settings        },
 ]
@@ -21,7 +22,7 @@ export default function DashSidebar({ activeSection, onNavigate, negocio, onSign
   const [copied, setCopied] = useState(false)
 
   function copyLink() {
-    const url = `https://agendamiento-five.vercel.app/${negocio?.slug ?? ''}`
+    const url = `https://turnott.com/${negocio?.slug ?? ''}`
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
@@ -100,7 +101,7 @@ export default function DashSidebar({ activeSection, onNavigate, negocio, onSign
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               flex: 1, textAlign: 'left',
             }}>
-              {copied ? '¡Link copiado!' : `turno.app/${negocio.slug}`}
+              {copied ? '¡Link copiado!' : `turnott.com/${negocio.slug}`}
             </span>
           </button>
         )}

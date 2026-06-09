@@ -1,11 +1,11 @@
 {
-  "name": "TURNO — Agenda tu cita",
-  "short_name": "TURNO",
-  "description": "Agendamiento online para barberías y estéticas",
-  "start_url": "/dashboard",
+  "name": "TURNOTT",
+  "short_name": "TURNOTT",
+  "description": "Agenda citas para barberías, tatuajes, uñas y más",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#050505",
-  "theme_color": "#050505",
+  "theme_color": "#00FF88",
   "orientation": "portrait-primary",
   "icons": [
     {

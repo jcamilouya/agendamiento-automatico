@@ -1,33 +1,10 @@
 ﻿import { useState, useEffect, useRef } from 'react'
-import { Plus, X, Pencil, Scissors, Upload, ImageIcon } from 'lucide-react'
+import { Plus, X, Pencil, Scissors } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { formatCurrency } from '../../lib/format'
 
 function initForm() {
-  return { name: '', category: '', description: '', duration_minutes: '', price: '', photo_url: '' }
-}
-
-function resizeToBase64(file, maxPx = 320, quality = 0.82) {
-  return new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const img = new Image()
-      img.onload = () => {
-        const scale = Math.min(maxPx / img.width, maxPx / img.height, 1)
-        const w = Math.round(img.width * scale)
-        const h = Math.round(img.height * scale)
-        const canvas = document.createElement('canvas')
-        canvas.width = w; canvas.height = h
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
-        resolve(canvas.toDataURL('image/jpeg', quality))
-      }
-      img.src = e.target.result
-    }
-    reader.readAsDataURL(file)
-  })
-}
-
-function formatCOP(n) {
-  return '$' + Math.round(n).toLocaleString('es-CO')
+  return { name: '', category: '', description: '', duration_minutes: '', price: '' }
 }
 
 function formatMin(m) {
@@ -44,7 +21,6 @@ export default function ServiciosPanel({ businessId }) {
   const [editing,  setEditing]  = useState(null)
   const [form,     setForm]     = useState(initForm)
   const [saving,   setSaving]   = useState(false)
-  const fileInputRef              = useRef(null)
   const nameInputRef              = useRef(null)
   const [toggling, setToggling] = useState(null)
   const [error,    setError]    = useState('')
@@ -80,7 +56,6 @@ export default function ServiciosPanel({ businessId }) {
       description:      s.description ?? '',
       duration_minutes: String(s.duration_minutes),
       price:            String(s.price),
-      photo_url:        s.photo_url ?? '',
     })
     setError('')
     setModal(true)
@@ -101,7 +76,6 @@ export default function ServiciosPanel({ businessId }) {
       name:             form.name.trim(),
       category:         form.category.trim() || null,
       description:      form.description.trim() || null,
-      photo_url:        form.photo_url || null,
       duration_minutes: dur,
       price:            prc,
     }
@@ -244,49 +218,6 @@ export default function ServiciosPanel({ businessId }) {
                 />
               </FormGroup>
 
-              <FormGroup label="Foto del servicio" hint="opcional — desde tu PC">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  onChange={async (e) => {
-                    const file = e.target.files[0]
-                    if (!file) return
-                    const b64 = await resizeToBase64(file)
-                    setForm(f => ({ ...f, photo_url: b64 }))
-                  }}
-                />
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 14px', borderRadius: 8, cursor: 'pointer',
-                    border: '1px dashed #2A2A2A', background: '#0A0A0A',
-                    transition: 'border-color 0.2s',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = '#2A2A2A'}
-                >
-                  {form.photo_url ? (
-                    <img src={form.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-                  ) : (
-                    <div style={{ width: 40, height: 40, borderRadius: 8, background: '#1A1A1A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <ImageIcon size={16} color="#444" />
-                    </div>
-                  )}
-                  <div>
-                    <p style={{ color: form.photo_url ? 'var(--accent)' : '#555', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', margin: 0 }}>
-                      {form.photo_url ? 'Foto cargada ✓' : 'Subir foto desde PC'}
-                    </p>
-                    <p style={{ color: '#3A3A3A', fontSize: '0.72rem', fontFamily: 'DM Sans, sans-serif', margin: '2px 0 0' }}>
-                      JPG, PNG o WebP — se comprime automático
-                    </p>
-                  </div>
-                  <Upload size={14} color="#333" style={{ marginLeft: 'auto', flexShrink: 0 }} />
-                </div>
-              </FormGroup>
-
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <FormGroup label="Duración (min) *">
                   <input
@@ -390,7 +321,7 @@ function ServiceRow({ service, index, toggling, onEdit, onToggle }) {
         color: 'var(--accent)', fontSize: '0.88rem',
         fontFamily: 'DM Sans, sans-serif', fontWeight: 700,
       }}>
-        {formatCOP(service.price)}
+        {formatCurrency(service.price)}
       </span>
 
       {/* Estado */}

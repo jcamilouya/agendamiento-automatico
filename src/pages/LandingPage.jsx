@@ -5,6 +5,7 @@ import {
   CheckCircle, ArrowRight, Star, Zap, Clock, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import WhatsAppFloat from '../components/WhatsAppFloat'
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 
@@ -25,12 +26,14 @@ function useScrollReveal(threshold = 0.12) {
 }
 
 function useTypewriter(text, speed = 40) {
-  const [displayed, setDisplayed] = useState('')
+  // Arrancamos con la primera letra ya pintada (sin flash vacío en el mount).
+  const [displayed, setDisplayed] = useState(() => text.charAt(0) || '')
   const [done, setDone] = useState(false)
   useEffect(() => {
-    setDisplayed('')
+    let i = 1
+    setDisplayed(text.charAt(0) || '')
     setDone(false)
-    let i = 0
+    if (text.length <= 1) { setDone(true); return }
     const id = setInterval(() => {
       i++
       setDisplayed(text.slice(0, i))
@@ -75,8 +78,8 @@ function Nav() {
   }, [])
 
   return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+    <nav className="landing-nav" style={{
+      position: 'fixed', top: 37, left: 0, right: 0, zIndex: 100,
       padding: '0 5vw',
       background: scrolled ? 'rgba(10,10,10,0.85)' : 'transparent',
       backdropFilter: scrolled ? 'blur(16px)' : 'none',
@@ -89,10 +92,36 @@ function Nav() {
         fontFamily: 'Syne, sans-serif', fontWeight: 800,
         fontSize: '1.3rem', color: 'var(--accent)', letterSpacing: '-0.02em',
       }}>
-        TURNO
+        TURNOTT
       </span>
 
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      {/* Anclas de marketing — solo visibles cuando NO hay sesión y en >= tablet */}
+      {!session && (
+        <div className="nav-anchors" style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+          {[
+            { href: '#caracteristicas', label: 'Características' },
+            { href: '#como-funciona',   label: 'Cómo funciona' },
+            { href: '#precios',         label: 'Precios' },
+          ].map(a => (
+            <a
+              key={a.href}
+              href={a.href}
+              style={{
+                color: '#999', fontSize: '0.85rem',
+                fontFamily: 'DM Sans, sans-serif',
+                textDecoration: 'none',
+                transition: 'color 0.2s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)' }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#999' }}
+            >
+              {a.label}
+            </a>
+          ))}
+        </div>
+      )}
+
+      <div className="nav-cta-group" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         {session ? (
           <>
             <span style={{
@@ -103,6 +132,7 @@ function Nav() {
               {session.user.email}
             </span>
             <button
+              className="nav-btn-secondary"
               onClick={handleSignOut}
               style={{
                 background: 'transparent', border: '1px solid #333',
@@ -149,20 +179,6 @@ function Nav() {
               Iniciar sesión
             </button>
             <button
-              onClick={() => navigate('/turno-demo')}
-              style={{
-                background: 'transparent', border: '1px solid #333',
-                color: '#888888', padding: '8px 18px',
-                borderRadius: 8, fontFamily: 'DM Sans, sans-serif',
-                fontSize: '0.85rem', cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.color = '#F5F5F5' }}
-              onMouseLeave={e => { e.target.style.borderColor = '#333'; e.target.style.color = '#888888' }}
-            >
-              Ver demo
-            </button>
-            <button
               onClick={() => navigate('/register')}
               style={{
                 background: 'var(--accent)', border: 'none',
@@ -203,9 +219,6 @@ function Hero() {
   const contentRef  = useRef(null)
 
   const [typed, typedDone] = useTypewriter(FULL_TITLE, 40)
-  const count500 = useAnimatedCounter(500, 2000, typedDone)
-  const count98  = useAnimatedCounter(98,  2000, typedDone)
-  const count30  = useAnimatedCounter(30,  2000, typedDone)
 
   const plainTyped   = typed.slice(0, TITLE_PLAIN.length)
   const coloredTyped = typed.length > TITLE_PLAIN.length ? typed.slice(TITLE_PLAIN.length) : ''
@@ -226,6 +239,16 @@ function Hero() {
         const heroH     = hero.offsetHeight
         const progress  = Math.min(scrolled / heroH, 1)
 
+        // En móvil el parallax agresivo causa saltos y hace desaparecer el
+        // contenido demasiado rápido — lo desactivamos por debajo de 768px.
+        const isMobile = window.innerWidth <= 768
+        if (isMobile) {
+          video.style.transform = 'none'
+          content.style.transform = 'none'
+          content.style.opacity = '1'
+          return
+        }
+
         // Video: slow translateY (parallax depth) + subtle zoom
         video.style.transform =
           `translate3d(0, ${scrolled * 0.28}px, 0) scale(${1 + progress * 0.12})`
@@ -243,9 +266,9 @@ function Hero() {
   }, [])
 
   const stats = [
-    { value: `+${count500}`, label: 'negocios activos' },
-    { value: `${count98}%`,  label: 'satisfacción' },
-    { value: `${count30}min`, label: 'ahorrados al día' },
+    { value: 'Beta',  label: 'Acceso anticipado', sub: 'Precio especial de lanzamiento' },
+    { value: '30min', label: 'Ahorrados al día',  sub: 'En gestión de citas' },
+    { value: '$0',    label: '30 días gratis',    sub: 'Sin tarjeta de crédito' },
   ]
 
   return (
@@ -350,11 +373,11 @@ function Hero() {
           transition: 'opacity 0.6s ease, transform 0.6s ease',
           textShadow: '0 1px 20px rgba(0,0,0,0.6)',
         }}>
-          Turno digitaliza el agendamiento de tu estética o barbería.
+          TURNOTT digitaliza el agendamiento de tu estética o barbería.
           Tus clientes agendan solos, 24/7 — tú recibes la cita directo en WhatsApp.
         </p>
 
-        <div style={{
+        <div className="hero-cta-group" style={{
           display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center',
           marginBottom: 64,
           opacity: typedDone ? 1 : 0,
@@ -362,6 +385,7 @@ function Hero() {
           transition: 'opacity 0.6s ease 0.15s, transform 0.6s ease 0.15s',
         }}>
           <button
+            className="hero-btn"
             onClick={() => navigate('/register')}
             style={{
               background: 'var(--accent)', border: 'none',
@@ -369,6 +393,7 @@ function Hero() {
               borderRadius: 10, fontFamily: 'DM Sans, sans-serif',
               fontSize: '1rem', fontWeight: 700, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 8,
+              justifyContent: 'center',
               transition: 'all 0.2s ease',
               boxShadow: '0 0 40px rgba(61,255,168,0.25)',
             }}
@@ -384,21 +409,7 @@ function Hero() {
             Crear mi perfil gratis <ArrowRight size={16} />
           </button>
           <button
-            onClick={() => navigate('/turno-demo')}
-            style={{
-              background: 'rgba(10,10,10,0.4)', border: '1px solid rgba(255,255,255,0.15)',
-              color: '#F5F5F5', padding: '14px 32px',
-              borderRadius: 10, fontFamily: 'DM Sans, sans-serif',
-              fontSize: '1rem', cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              backdropFilter: 'blur(8px)',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
-          >
-            Probar demo
-          </button>
-          <button
+            className="hero-btn"
             onClick={() => navigate('/login')}
             style={{
               background: 'rgba(10,10,10,0.4)', border: '1px solid rgba(255,255,255,0.15)',
@@ -411,11 +422,11 @@ function Hero() {
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
           >
-            Ver dashboard
+            Iniciar sesión
           </button>
         </div>
 
-        <div style={{
+        <div className="hero-stats" style={{
           display: 'flex', gap: 48, flexWrap: 'wrap', justifyContent: 'center',
           opacity: typedDone ? 1 : 0,
           transform: typedDone ? 'translateY(0)' : 'translateY(16px)',
@@ -430,8 +441,11 @@ function Hero() {
               }}>
                 {s.value}
               </p>
-              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: 'rgba(245,245,245,0.5)', marginTop: 4 }}>
+              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: 'rgba(245,245,245,0.6)', marginTop: 4 }}>
                 {s.label}
+              </p>
+              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.7rem', color: '#555555', marginTop: 2 }}>
+                {s.sub}
               </p>
             </div>
           ))}
@@ -474,7 +488,7 @@ function Features() {
   const [ref, visible] = useScrollReveal()
 
   return (
-    <section ref={ref} style={{ padding: '80px 5vw', background: '#0D0D0D' }}>
+    <section id="caracteristicas" ref={ref} style={{ padding: '80px 5vw', background: '#0D0D0D', scrollMarginTop: 80 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <p style={{
           fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem',
@@ -587,7 +601,7 @@ function HowItWorks() {
   const [ref, visible] = useScrollReveal()
 
   return (
-    <section ref={ref} style={{ padding: '80px 5vw' }}>
+    <section id="como-funciona" ref={ref} style={{ padding: '80px 5vw', scrollMarginTop: 80 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <p style={{
           fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem',
@@ -749,55 +763,45 @@ function Testimonials() {
 
 // ── Section: Pricing ──────────────────────────────────────────────────────────
 
-const PLANS = [
-  {
-    name: 'Básico',
-    price: '$89.000',
-    desc: 'Perfecto para empezar',
-    highlight: false,
-    features: [
-      '1 estilista',
-      'Hasta 60 citas / mes',
-      'WhatsApp automático',
-      'Reportes básicos',
-      'Soporte por chat',
-    ],
-  },
-  {
-    name: 'Pro',
-    price: '$159.000',
-    desc: 'El favorito de los negocios en crecimiento',
-    highlight: true,
-    badge: 'Más popular',
-    features: [
-      'Hasta 5 estilistas',
-      'Citas ilimitadas',
-      'WhatsApp automático',
-      'Reportes avanzados',
-      'Soporte prioritario',
-    ],
-  },
-  {
-    name: 'Negocio',
-    price: '$299.000',
-    desc: 'Para cadenas y múltiples sedes',
-    highlight: false,
-    features: [
-      'Estilistas ilimitados',
-      'Múltiples sedes',
-      'WhatsApp automático',
-      'Reportes avanzados',
-      'Gerente de cuenta',
-    ],
-  },
+const BUSINESS_TYPES_CHIPS = [
+  '💈 Barberías', '🎨 Tatuajes', '💅 Uñas & Manicure',
+  '✂️ Salones de belleza', '🧖 Spas & Masajes', '👁️ Cejas & Pestañas',
 ]
+
+function ProntoBadge() {
+  return (
+    <span style={{
+      background: '#2a1f00', color: '#F59E0B',
+      border: '1px solid rgba(245,158,11,0.2)',
+      borderRadius: '4px', fontSize: '10px',
+      fontWeight: 600, padding: '1px 6px', marginLeft: '6px',
+      verticalAlign: 'middle',
+    }}>pronto</span>
+  )
+}
+
+function PricingFeature({ text, enabled = true, pronto = false }) {
+  return (
+    <li style={{
+      display: 'flex', alignItems: 'flex-start', gap: 10,
+      fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem',
+      color: enabled ? '#CCCCCC' : '#555555', marginBottom: 10,
+    }}>
+      {enabled
+        ? <CheckCircle size={15} color="var(--accent)" style={{ flexShrink: 0, marginTop: 1 }} />
+        : <span style={{ width: 15, height: 15, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1, fontSize: '0.75rem', color: '#444' }}>✕</span>
+      }
+      <span>{text}{pronto && <ProntoBadge />}</span>
+    </li>
+  )
+}
 
 function Pricing() {
   const navigate = useNavigate()
   const [ref, visible] = useScrollReveal()
 
   return (
-    <section ref={ref} style={{ padding: '80px 5vw' }}>
+    <section id="precios" ref={ref} style={{ padding: '80px 5vw', scrollMarginTop: 80 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <p style={{
           fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem',
@@ -822,113 +826,177 @@ function Pricing() {
         </h2>
         <p style={{
           fontFamily: 'DM Sans, sans-serif', fontSize: '0.88rem',
-          color: '#555555', textAlign: 'center', marginBottom: 56,
+          color: '#555555', textAlign: 'center', marginBottom: 28,
           opacity: visible ? 1 : 0,
           transform: visible ? 'translateY(0)' : 'translateY(30px)',
           transition: 'opacity 0.6s ease 0.15s, transform 0.6s ease 0.15s',
         }}>
-          14 días gratis, sin tarjeta de crédito
+          30 días gratis · Sin tarjeta de crédito · Cancela cuando quieras
         </p>
 
-        <div className="landing-pricing-grid">
-          {PLANS.map((p, i) => (
-            <div
-              key={p.name}
-              style={{
-                background: p.highlight ? 'linear-gradient(145deg, #0F1F14, #111111)' : '#111111',
-                border: `1px solid ${p.highlight ? '#00FF88' : '#1E1E1E'}`,
-                borderRadius: 16, padding: '32px 28px',
-                position: 'relative',
-                boxShadow: p.highlight ? '0 0 60px rgba(61,255,168,0.1)' : 'none',
-                opacity: visible ? 1 : 0,
-                transform: visible ? 'translateY(0)' : 'translateY(30px)',
-                transition: `opacity 0.6s ease ${(i + 2) * 100}ms, transform 0.6s ease ${(i + 2) * 100}ms`,
-              }}
-            >
-              {p.badge && (
-                <div style={{
-                  position: 'absolute', top: -12, left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'var(--accent)', color: '#0A0A0A',
-                  fontFamily: 'DM Sans, sans-serif', fontSize: '0.72rem', fontWeight: 700,
-                  padding: '4px 14px', borderRadius: 999,
-                  whiteSpace: 'nowrap',
-                }}>
-                  {p.badge}
-                </div>
-              )}
-
-              <p style={{
-                fontFamily: 'Syne, sans-serif', fontWeight: 700,
-                fontSize: '1rem', color: p.highlight ? '#00FF88' : '#F5F5F5',
-                marginBottom: 4,
-              }}>
-                {p.name}
-              </p>
-              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#555555', marginBottom: 20 }}>
-                {p.desc}
-              </p>
-
-              <div style={{ marginBottom: 28 }}>
-                <span style={{
-                  fontFamily: 'Syne, sans-serif', fontWeight: 800,
-                  fontSize: '2.2rem', color: '#F5F5F5',
-                }}>
-                  {p.price}
-                </span>
-                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: '#555555' }}>
-                  {' '}/mes
-                </span>
-              </div>
-
-              <ul style={{ listStyle: 'none', padding: 0, marginBottom: 28 }}>
-                {p.features.map(f => (
-                  <li key={f} style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem',
-                    color: '#CCCCCC', marginBottom: 10,
-                  }}>
-                    <CheckCircle size={15} color="var(--accent)" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                onClick={() => navigate('/register')}
-                style={{
-                  width: '100%',
-                  background: p.highlight ? '#00FF88' : 'transparent',
-                  border: `1px solid ${p.highlight ? '#00FF88' : '#333333'}`,
-                  color: p.highlight ? '#0A0A0A' : '#F5F5F5',
-                  padding: '12px', borderRadius: 10,
-                  fontFamily: 'DM Sans, sans-serif', fontSize: '0.88rem',
-                  fontWeight: p.highlight ? 700 : 400,
-                  cursor: 'pointer', transition: 'all 0.2s ease',
-                }}
-                onMouseEnter={e => {
-                  if (p.highlight) {
-                    e.currentTarget.style.transform = 'scale(1.03)'
-                    e.currentTarget.style.boxShadow = '0 4px 24px rgba(61,255,168,0.4)'
-                  } else {
-                    e.currentTarget.style.borderColor = '#00FF88'
-                    e.currentTarget.style.color = '#00FF88'
-                  }
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'scale(1)'
-                  e.currentTarget.style.boxShadow = 'none'
-                  if (!p.highlight) {
-                    e.currentTarget.style.borderColor = '#333333'
-                    e.currentTarget.style.color = '#F5F5F5'
-                  }
-                }}
-              >
-                Empezar gratis
-              </button>
-            </div>
+        {/* Badge row — tipos de negocio */}
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center',
+          marginBottom: 48,
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.6s ease 0.2s',
+        }}>
+          {BUSINESS_TYPES_CHIPS.map(tipo => (
+            <span key={tipo} style={{
+              background: '#0D3320', color: '#00FF88',
+              borderRadius: '999px', fontSize: '11px', fontWeight: 600,
+              padding: '5px 12px', border: '1px solid rgba(0,255,136,0.13)',
+              fontFamily: 'DM Sans, sans-serif',
+            }}>
+              {tipo}
+            </span>
           ))}
         </div>
+
+        <div className="landing-pricing-grid">
+          {/* ── Plan Básico ── */}
+          <div style={{
+            background: '#111111', border: '1px solid #1E1E1E',
+            borderRadius: 16, padding: '32px 28px', position: 'relative',
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'opacity 0.6s ease 200ms, transform 0.6s ease 200ms',
+          }}>
+            <p style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1rem', color: '#F5F5F5', marginBottom: 4 }}>Básico</p>
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#555555', marginBottom: 20 }}>Perfecto para empezar</p>
+            <div style={{ marginBottom: 28 }}>
+              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '2.2rem', color: '#F5F5F5' }}>$50.000</span>
+              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: '#555555' }}> /mes</span>
+            </div>
+            <ul style={{ listStyle: 'none', padding: 0, marginBottom: 28 }}>
+              <PricingFeature text="Agenda online 24/7" />
+              <PricingFeature text="Hasta 80 citas al mes" />
+              <PricingFeature text="2 profesionales incluidos" />
+              <PricingFeature text="Link propio de reservas (turnott.com/tu-negocio)" />
+              <PricingFeature text="WhatsApp automático de confirmación" />
+              <PricingFeature text="Cancelación por link desde WhatsApp" />
+              <PricingFeature text="Panel de citas del día" />
+              <PricingFeature text="Reportes básicos" />
+              <PricingFeature text="Soporte por chat" />
+              <PricingFeature text="Recordatorios automáticos" enabled={false} />
+              <PricingFeature text="Lista de espera" enabled={false} />
+            </ul>
+            <button
+              onClick={() => navigate('/register')}
+              style={{
+                width: '100%', background: 'transparent',
+                border: '1px solid #333333', color: '#F5F5F5',
+                padding: '12px', borderRadius: 10,
+                fontFamily: 'DM Sans, sans-serif', fontSize: '0.88rem',
+                cursor: 'pointer', transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88'; e.currentTarget.style.color = '#00FF88' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#333333'; e.currentTarget.style.color = '#F5F5F5' }}
+            >
+              Empezar gratis
+            </button>
+          </div>
+
+          {/* ── Plan Pro ── */}
+          <div style={{
+            background: '#0a1f14', border: '1px solid #00FF88',
+            borderRadius: 16, padding: '32px 28px', position: 'relative',
+            boxShadow: '0 0 60px rgba(61,255,168,0.1)',
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'opacity 0.6s ease 300ms, transform 0.6s ease 300ms',
+          }}>
+            <div style={{
+              position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
+              background: 'var(--accent)', color: '#0A0A0A',
+              fontFamily: 'DM Sans, sans-serif', fontSize: '0.72rem', fontWeight: 700,
+              padding: '4px 14px', borderRadius: 999, whiteSpace: 'nowrap',
+            }}>
+              Más popular
+            </div>
+            <p style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1rem', color: '#00FF88', marginBottom: 4 }}>Pro</p>
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#555555', marginBottom: 20 }}>El favorito de los negocios en crecimiento</p>
+            <div style={{ marginBottom: 28 }}>
+              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '2.2rem', color: '#F5F5F5' }}>$100.000</span>
+              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: '#555555' }}> /mes</span>
+            </div>
+            <ul style={{ listStyle: 'none', padding: 0, marginBottom: 28 }}>
+              <PricingFeature text="Todo lo del plan Básico" />
+              <PricingFeature text="Citas ilimitadas" />
+              <PricingFeature text="5 profesionales incluidos" />
+              <PricingFeature text="Recordatorios automáticos 24h antes" />
+              <PricingFeature text="Lista de espera automática" />
+              <PricingFeature text="Panel de clientes con historial" />
+              <PricingFeature text="Notas privadas por cliente" />
+              <PricingFeature text="Reportes avanzados con gráficos" />
+              <PricingFeature text="Personalización de colores y marca" />
+              <PricingFeature text="Notificaciones en tiempo real" />
+              <PricingFeature text="Soporte prioritario" />
+            </ul>
+            <button
+              onClick={() => navigate('/register')}
+              style={{
+                width: '100%', background: '#00FF88', border: '1px solid #00FF88',
+                color: '#0A0A0A', padding: '12px', borderRadius: 10,
+                fontFamily: 'DM Sans, sans-serif', fontSize: '0.88rem', fontWeight: 700,
+                cursor: 'pointer', transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(61,255,168,0.4)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none' }}
+            >
+              Empezar gratis
+            </button>
+          </div>
+
+          {/* ── Plan Negocio ── */}
+          <div style={{
+            background: '#111111', border: '1px solid #1E1E1E',
+            borderRadius: 16, padding: '32px 28px', position: 'relative',
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'opacity 0.6s ease 400ms, transform 0.6s ease 400ms',
+          }}>
+            <p style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1rem', color: '#F5F5F5', marginBottom: 4 }}>Negocio</p>
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#555555', marginBottom: 20 }}>Para cadenas y múltiples sedes</p>
+            <div style={{ marginBottom: 28 }}>
+              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '2.2rem', color: '#F5F5F5' }}>$140.000</span>
+              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: '#555555' }}> /mes</span>
+            </div>
+            <ul style={{ listStyle: 'none', padding: 0, marginBottom: 28 }}>
+              <PricingFeature text="Todo lo del plan Pro" />
+              <PricingFeature text="Profesionales ilimitados" />
+              <PricingFeature text="Múltiples sedes" pronto />
+              <PricingFeature text="Personalización completa de marca" />
+              <PricingFeature text="Onboarding personalizado" />
+              <PricingFeature text="Gerente de cuenta dedicado" />
+              <PricingFeature text="Acceso API" pronto />
+              <PricingFeature text="SLA de soporte prioritario" />
+            </ul>
+            <button
+              onClick={() => window.open('https://wa.me/573143707036?text=Hola%2C%20me%20interesa%20TURNOTT', '_blank')}
+              style={{
+                width: '100%', background: 'transparent',
+                border: '1px solid #333333', color: '#F5F5F5',
+                padding: '12px', borderRadius: 10,
+                fontFamily: 'DM Sans, sans-serif', fontSize: '0.88rem',
+                cursor: 'pointer', transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#00FF88'; e.currentTarget.style.color = '#00FF88' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#333333'; e.currentTarget.style.color = '#F5F5F5' }}
+            >
+              Hablar con ventas
+            </button>
+          </div>
+        </div>
+
+        {/* Nota al pie */}
+        <p style={{
+          fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem',
+          color: '#444444', textAlign: 'center', marginTop: 32,
+          opacity: visible ? 1 : 0, transition: 'opacity 0.6s ease 0.5s',
+        }}>
+          Todos los planes incluyen: PWA instalable · SSL · Actualizaciones automáticas · Datos seguros con Supabase
+        </p>
       </div>
     </section>
   )
@@ -985,11 +1053,11 @@ function CTABand() {
           color: '#666666', lineHeight: 1.6, marginBottom: 36,
         }}>
           Únete a cientos de barberías y estéticas que ya digitalizaron sus citas.
-          14 días gratis, sin tarjeta, sin compromisos.
+          30 días gratis, sin tarjeta, sin compromisos.
         </p>
 
         <button
-          onClick={() => navigate('/turno-demo')}
+          onClick={() => navigate('/register')}
           style={{
             background: 'var(--accent)', border: 'none',
             color: '#0A0A0A', padding: '16px 40px',
@@ -1008,7 +1076,7 @@ function CTABand() {
             e.currentTarget.style.boxShadow = '0 0 50px rgba(61,255,168,0.25)'
           }}
         >
-          Probar gratis 14 días <ArrowRight size={18} />
+          Crear mi perfil gratis <ArrowRight size={18} />
         </button>
       </div>
     </section>
@@ -1031,17 +1099,16 @@ function Footer() {
         fontFamily: 'Syne, sans-serif', fontWeight: 800,
         fontSize: '1.1rem', color: 'var(--accent)',
       }}>
-        TURNO
+        TURNOTT
       </span>
 
       <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#444444' }}>
-        © 2025 Turno. Hecho con cariño en Colombia.
+        © 2025 TURNOTT. Hecho con cariño en Colombia.
       </p>
 
       <div style={{ display: 'flex', gap: 24 }}>
         {[
-          { label: 'Demo',      action: () => navigate('/turno-demo') },
-          { label: 'Dashboard', action: () => navigate('/login') },
+          { label: 'Iniciar sesión', action: () => navigate('/login') },
         ].map(l => (
           <button
             key={l.label}
@@ -1068,6 +1135,17 @@ function Footer() {
 export default function LandingPage() {
   return (
     <div style={{ background: '#0A0A0A', minHeight: '100vh' }}>
+      {/* Banner de lanzamiento — fixed, encima del nav */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+        background: '#0D3320', borderBottom: '1px solid rgba(0,255,136,0.2)',
+        padding: '8px 16px', textAlign: 'center',
+        fontSize: '13px', color: '#00FF88', fontWeight: 500,
+        fontFamily: 'DM Sans, sans-serif', height: 37,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        🚀 Lanzamiento 2026 — Sé de los primeros 100 negocios y obtén precio especial para siempre
+      </div>
       <Nav />
       <Hero />
       <Features />
@@ -1076,6 +1154,7 @@ export default function LandingPage() {
       <Pricing />
       <CTABand />
       <Footer />
+      <WhatsAppFloat />
     </div>
   )
 }

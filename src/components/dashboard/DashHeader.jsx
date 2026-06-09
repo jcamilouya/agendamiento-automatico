@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useRef } from 'react'
-import { Bell, X, CheckCheck, Calendar, Clock, Sun, Moon, LogOut } from 'lucide-react'
+import { Bell, X, CheckCheck, Calendar, Clock, Sun, Moon, LogOut, AlertCircle } from 'lucide-react'
 import { useNotifications, formatDateShort, formatHM, relativeTime } from '../../hooks/useNotifications'
 
 const DIAS   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
@@ -43,7 +43,6 @@ function NotifToast({ notif, onDismiss }) {
           style={{
             position: 'fixed', inset: 0, zIndex: 999,
             background: 'rgba(0,0,0,0.45)',
-            backdropFilter: 'blur(3px)',
             animation: 'fadeIn 0.2s ease',
           }}
         />
@@ -216,7 +215,7 @@ function NotifItem({ notif, onRead }) {
   )
 }
 
-function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose }) {
+function NotifDropdown({ notifications, unreadCount, pendingAppts, onMarkAll, onRead, onClear, onClose }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -225,17 +224,25 @@ function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose 
     return () => document.removeEventListener('keydown', handleKey)
   }, [])
 
+  // Auto-marcar todas como leídas 3s después de abrir el panel
+  useEffect(() => {
+    if (unreadCount === 0) return
+    const t = setTimeout(() => onMarkAll(), 3000)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const hasContent = notifications.length > 0 || pendingAppts.length > 0
+
   return (
     <>
       {/* Backdrop */}
-      <div
-        onClick={onClose}
-        style={{ position: 'fixed', inset: 0, zIndex: 198 }}
-      />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 198 }} />
 
       {/* Panel */}
       <div
         ref={ref}
+        className="notif-dropdown"
         style={{
           position: 'absolute', top: 'calc(100% + 10px)', right: 0,
           width: 360, zIndex: 199,
@@ -253,7 +260,7 @@ function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Bell size={14} color="#888" />
             <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '0.85rem', color: '#F5F5F5' }}>
-              Notificaciones
+              Actividad
             </span>
             {unreadCount > 0 && (
               <span style={{
@@ -284,34 +291,108 @@ function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose 
           )}
         </div>
 
-        {/* List */}
-        <div style={{ maxHeight: 380, overflowY: 'auto' }}>
-          {notifications.length === 0 ? (
+        <div style={{ maxHeight: 420, overflowY: 'auto' }}>
+          {/* Sección: pendientes de confirmar hoy */}
+          {pendingAppts.length > 0 && (
+            <div>
+              <div style={{
+                padding: '8px 16px 6px',
+                fontSize: '0.65rem', fontWeight: 700,
+                color: '#F59E0B', letterSpacing: '0.08em',
+                textTransform: 'uppercase', fontFamily: 'DM Sans, sans-serif',
+                background: 'rgba(245,158,11,0.04)',
+                borderBottom: '1px solid rgba(245,158,11,0.12)',
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}>
+                <Clock size={11} color="#F59E0B" />
+                {pendingAppts.length} pendiente{pendingAppts.length > 1 ? 's' : ''} de confirmar hoy
+              </div>
+              {pendingAppts.map(a => (
+                <div key={a.id} style={{
+                  padding: '11px 16px',
+                  borderBottom: '1px solid #161616',
+                  display: 'flex', gap: 10, alignItems: 'center',
+                }}>
+                  <span style={{
+                    width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                    background: '#F59E0B', boxShadow: '0 0 5px #F59E0B66',
+                  }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                      <span style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 600, fontSize: '0.82rem', color: '#F5F5F5' }}>
+                        {a.client_name}
+                      </span>
+                      <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.68rem', color: '#555', flexShrink: 0 }}>
+                        {formatHM(a.start_time)}
+                      </span>
+                    </div>
+                    <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.72rem', color: '#666' }}>
+                      {a.services?.name ?? 'Servicio'} · {a.stylists?.name ?? ''}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Sección: nuevas citas realtime */}
+          {notifications.length > 0 && (
+            <div>
+              {pendingAppts.length > 0 && (
+                <div style={{
+                  padding: '8px 16px 6px',
+                  fontSize: '0.65rem', fontWeight: 700,
+                  color: 'var(--accent)', letterSpacing: '0.08em',
+                  textTransform: 'uppercase', fontFamily: 'DM Sans, sans-serif',
+                  background: 'rgba(var(--accent-rgb),0.04)',
+                  borderBottom: '1px solid rgba(var(--accent-rgb),0.1)',
+                }}>
+                  Nuevas citas (esta sesión)
+                </div>
+              )}
+              {notifications.map(n => (
+                <NotifItem key={n.id} notif={n} onRead={onRead} />
+              ))}
+            </div>
+          )}
+
+          {/* Estado vacío */}
+          {!hasContent && (
             <div style={{ padding: '40px 24px', textAlign: 'center' }}>
               <Bell size={32} color="#222" style={{ margin: '0 auto 12px', display: 'block' }} />
               <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.82rem', color: '#333' }}>
-                Sin notificaciones aún
+                Todo al día
               </p>
               <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.72rem', color: '#2A2A2A', marginTop: 4 }}>
                 Las nuevas citas aparecerán aquí en tiempo real
               </p>
             </div>
-          ) : (
-            notifications.map(n => (
-              <NotifItem key={n.id} notif={n} onRead={onRead} />
-            ))
           )}
         </div>
 
-        {/* Footer */}
-        {notifications.length > 0 && (
-          <div style={{
-            padding: '10px 16px', borderTop: '1px solid #1A1A1A',
-            textAlign: 'center',
-          }}>
+        {hasContent && (
+          <div style={{ padding: '10px 16px', borderTop: '1px solid #1A1A1A', textAlign: 'center' }}>
             <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.7rem', color: '#333' }}>
-              Últimas {notifications.length} notificaciones de esta sesión
+              {notifications.length === 0
+                ? 'Confirma las citas pendientes en Agenda'
+                : `${notifications.length} notificación${notifications.length > 1 ? 'es' : ''} nueva${notifications.length > 1 ? 's' : ''}`}
             </span>
+            {notifications.length > 0 && (
+              <button
+                onClick={() => { onClear(); onClose() }}
+                style={{
+                  width: '100%', padding: '8px', marginTop: '8px',
+                  background: 'transparent', border: '1px solid #1E1E1E',
+                  borderRadius: '8px', color: '#555', fontSize: '12px',
+                  fontFamily: 'DM Sans, sans-serif', cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#F5F5F5'; e.currentTarget.style.borderColor = '#3A3A3A' }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#555'; e.currentTarget.style.borderColor = '#1E1E1E' }}
+              >
+                Limpiar notificaciones
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -321,12 +402,13 @@ function NotifDropdown({ notifications, unreadCount, onMarkAll, onRead, onClose 
 
 // ── Header principal ──────────────────────────────────────────────────────────
 
-export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle, onSignOut }) {
+export default function DashHeader({ negocio, pendingAppts = [], theme, onThemeToggle, onSignOut }) {
+  const pendingCount = pendingAppts.length
   const [open, setOpen] = useState(false)
   const bellRef         = useRef(null)
   const isLight         = theme === 'light'
 
-  const { notifications, unreadCount, markAllRead, markRead, dismissToast } =
+  const { notifications, unreadCount, markAllRead, markRead, dismissToast, clearAll } =
     useNotifications(negocio?.id)
 
   const toasts = notifications.filter(n => n.toast)
@@ -359,19 +441,20 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
 
       {/* Header */}
       <div className="dash-header">
-        <div>
+        <div className="dash-header-text" style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
           <h1 style={{
             fontFamily: 'Syne, sans-serif', fontWeight: 700,
             fontSize: '1.15rem', color: '#F5F5F5', marginBottom: 3,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {getGreeting()}{negocio ? `, ${negocio.name}` : ''}
           </h1>
-          <p style={{ color: '#888888', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif' }}>
+          <p style={{ color: '#888888', fontSize: '0.82rem', fontFamily: 'DM Sans, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {DIAS[now.getDay()]}, {now.getDate()} de {MESES[now.getMonth()]} de {now.getFullYear()}
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="dash-header-actions" style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
           {/* Toggle dark/light */}
           <button
             onClick={onThemeToggle}
@@ -392,11 +475,12 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
             }
           </button>
 
-          {/* Cerrar sesión */}
+          {/* Cerrar sesión — oculto en móvil via .dash-header-signout */}
           {onSignOut && (
             <button
               onClick={onSignOut}
               title="Cerrar sesión"
+              className="dash-header-signout"
               style={{
                 background: isLight ? 'rgba(0,0,0,0.06)' : '#1A1A1A',
                 border: `1px solid ${isLight ? 'rgba(0,0,0,0.1)' : '#252525'}`,
@@ -417,7 +501,12 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
               onClick={() => setOpen(o => !o)}
               style={{
                 background: open ? '#1E2A1E' : '#1A1A1A',
-                border: `1px solid ${open ? 'var(--accent)' : unreadCount > 0 ? 'rgba(var(--accent-rgb),0.4)' : '#252525'}`,
+                border: `1px solid ${
+                  open ? 'var(--accent)'
+                  : unreadCount > 0 ? 'rgba(var(--accent-rgb),0.4)'
+                  : pendingCount > 0 ? 'rgba(245,158,11,0.4)'
+                  : '#252525'
+                }`,
                 borderRadius: 10, padding: 10, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.2s ease',
@@ -425,13 +514,17 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
               }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
               onMouseLeave={e => {
-                if (!open) e.currentTarget.style.borderColor = unreadCount > 0 ? 'rgba(var(--accent-rgb),0.4)' : '#252525'
+                if (!open) {
+                  e.currentTarget.style.borderColor = unreadCount > 0
+                    ? 'rgba(var(--accent-rgb),0.4)'
+                    : pendingCount > 0 ? 'rgba(245,158,11,0.4)' : '#252525'
+                }
               }}
             >
-              <Bell size={18} color={unreadCount > 0 ? 'var(--accent)' : '#888888'} />
+              <Bell size={18} color={unreadCount > 0 ? 'var(--accent)' : pendingCount > 0 ? '#F59E0B' : '#888888'} />
             </button>
 
-            {/* Badge */}
+            {/* Badge verde: nuevas citas realtime */}
             {unreadCount > 0 && (
               <span style={{
                 position: 'absolute', top: -5, right: -5,
@@ -439,14 +532,13 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
                 fontSize: '0.58rem', fontWeight: 800,
                 borderRadius: 999, padding: '2px 5px',
                 fontFamily: 'DM Sans, sans-serif',
-                minWidth: 17, textAlign: 'center',
-                lineHeight: 1.4,
+                minWidth: 17, textAlign: 'center', lineHeight: 1.4,
               }}>
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
 
-            {/* Badge de pendientes del día (si no hay notifs nuevas) */}
+            {/* Badge ámbar: citas pendientes (solo si no hay notifs nuevas) */}
             {unreadCount === 0 && pendingCount > 0 && (
               <span style={{
                 position: 'absolute', top: -5, right: -5,
@@ -454,8 +546,7 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
                 fontSize: '0.58rem', fontWeight: 800,
                 borderRadius: 999, padding: '2px 5px',
                 fontFamily: 'DM Sans, sans-serif',
-                minWidth: 17, textAlign: 'center',
-                lineHeight: 1.4,
+                minWidth: 17, textAlign: 'center', lineHeight: 1.4,
               }}>
                 {pendingCount}
               </span>
@@ -466,8 +557,10 @@ export default function DashHeader({ negocio, pendingCount, theme, onThemeToggle
               <NotifDropdown
                 notifications={notifications}
                 unreadCount={unreadCount}
+                pendingAppts={pendingAppts}
                 onMarkAll={() => { markAllRead(); }}
                 onRead={markRead}
+                onClear={clearAll}
                 onClose={() => setOpen(false)}
               />
             )}

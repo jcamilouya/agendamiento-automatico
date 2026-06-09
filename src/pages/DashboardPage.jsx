@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Calendar, DollarSign, Clock, TrendingUp } from 'lucide-react'
+import { Calendar, DollarSign, Clock, TrendingUp, Home, Users, User, Settings, Link, Share2, Scissors, BarChart2, Menu, LogOut } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import DashSidebar   from '../components/dashboard/DashSidebar'
@@ -14,6 +14,10 @@ import EstilistasPanel from '../components/dashboard/EstilistasPanel'
 import ServiciosPanel  from '../components/dashboard/ServiciosPanel'
 import AjustesPanel    from '../components/dashboard/AjustesPanel'
 import ClientesPanel   from '../components/dashboard/ClientesPanel'
+import HorariosPanel   from '../components/dashboard/HorariosPanel'
+import ReporteSemanal  from '../components/dashboard/ReporteSemanal'
+import { formatCurrency } from '../lib/format'
+import { isSuperAdmin } from '../config/admin'
 
 const DEMO_SLUG = 'turno-demo'
 
@@ -37,11 +41,11 @@ function getSunday(d) {
   return toYMD(s)
 }
 
-function formatCOP(n) {
-  return '$' + Math.round(n).toLocaleString('es-CO')
-}
-
 const DIAS_SEMANA = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
+
+function priceOf(a) {
+  return Number(a.final_price ?? a.services?.price ?? 0)
+}
 
 function buildWeekData(appts) {
   const map = {}
@@ -50,7 +54,7 @@ function buildWeekData(appts) {
     const d   = new Date(a.date + 'T12:00:00')
     const key = DIAS_SEMANA[d.getDay() === 0 ? 6 : d.getDay() - 1]
     map[key].citas++
-    if (a.status === 'completed') map[key].ingresos += Number(a.services?.price ?? 0)
+    if (a.status === 'completed') map[key].ingresos += priceOf(a)
   })
   return DIAS_SEMANA.map(d => map[d])
 }
@@ -64,10 +68,12 @@ export default function DashboardPage() {
   const [weekAppts,      setWeekAppts]      = useState([])
   const [upcomingAppts,  setUpcomingAppts]  = useState([])
   const [stylists,       setStylists]       = useState([])
+  const [services,       setServices]       = useState([])
   const [dataLoading,    setDataLoading]    = useState(true)
   const [allCitas,       setAllCitas]       = useState([])
   const [allCitasLoading,setAllCitasLoading]= useState(false)
   const [activeSection,  setActiveSection]  = useState('inicio')
+  const [drawerAbierto,  setDrawerAbierto]  = useState(false)
   const [theme,          setTheme]          = useState(() => localStorage.getItem('turno-theme') || 'dark')
   const [accentColor,    setAccentColor]    = useState(() => localStorage.getItem('turno-accent') || '#00FF88')
   const [widgetOrder,    setWidgetOrder]    = useState(() => {
@@ -115,6 +121,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!session) return
+    // El super-admin no tiene un dashboard de negocio — siempre va al panel admin.
+    if (isSuperAdmin(session)) {
+      navigate('/admin', { replace: true })
+      return
+    }
     loadAll()
   }, [session])
 
@@ -151,7 +162,7 @@ export default function DashboardPage() {
       }
       setNegocio(neg)
 
-      const [todayRes, weekRes, upcomingRes, stylistsRes] = await Promise.all([
+      const [todayRes, weekRes, upcomingRes, stylistsRes, servicesRes] = await Promise.all([
         supabase
           .from('appointments')
           .select('*, stylists(id, name, photo_url), services(name, price, duration_minutes)')
@@ -161,7 +172,7 @@ export default function DashboardPage() {
 
         supabase
           .from('appointments')
-          .select('date, status, services(price)')
+          .select('date, status, final_price, services(price)')
           .eq('business_id', neg.id)
           .gte('date', mon)
           .lte('date', sun)
@@ -171,8 +182,8 @@ export default function DashboardPage() {
           .from('appointments')
           .select('*, stylists(name), services(name)')
           .eq('business_id', neg.id)
-          .gt('date', today)
-          .neq('status', 'cancelled')
+          .gte('date', today)
+          .in('status', ['pending', 'confirmed'])
           .order('date')
           .order('start_time')
           .limit(5),
@@ -183,12 +194,20 @@ export default function DashboardPage() {
           .eq('business_id', neg.id)
           .eq('is_active', true)
           .order('name'),
+
+        supabase
+          .from('services')
+          .select('id, name, price, duration_minutes')
+          .eq('business_id', neg.id)
+          .eq('is_active', true)
+          .order('name'),
       ])
 
       setTodayAppts(todayRes.data ?? [])
       setWeekAppts(weekRes.data ?? [])
       setUpcomingAppts(upcomingRes.data ?? [])
       setStylists(stylistsRes.data ?? [])
+      setServices(servicesRes.data ?? [])
     } catch (err) {
       console.error('Error cargando dashboard:', err)
     } finally {
@@ -235,6 +254,42 @@ export default function DashboardPage() {
     }
   }
 
+  async function handleAddWalkin({ nombre, telefono, stylist_id, service_id }) {
+    const svc = services.find(s => s.id === service_id)
+    const now = new Date()
+    const pad = n => String(n).padStart(2, '0')
+    const startTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`
+    const endMs  = now.getTime() + (svc?.duration_minutes ?? 30) * 60000
+    const endD   = new Date(endMs)
+    const endTime = `${pad(endD.getHours())}:${pad(endD.getMinutes())}`
+
+    const { data, error } = await supabase
+      .from('appointments')
+      .insert({
+        business_id:  negocio.id,
+        stylist_id,
+        service_id,
+        client_name:  nombre.trim(),
+        client_phone: telefono.replace(/\D/g, '') || 'N/A',
+        date:         toYMD(now),
+        start_time:   startTime,
+        end_time:     endTime,
+        status:       'confirmed',
+      })
+      .select('*, stylists(id, name, photo_url), services(name, price, duration_minutes)')
+      .single()
+
+    if (error) {
+      console.error('Walk-in Supabase error:', JSON.stringify(error))
+      throw error
+    }
+
+    setTodayAppts(prev =>
+      [...prev, data].sort((a, b) => a.start_time.localeCompare(b.start_time))
+    )
+    setWeekAppts(prev => [...prev, data])
+  }
+
   async function handleSignOut() {
     await signOut()
     navigate('/login')
@@ -244,7 +299,7 @@ export default function DashboardPage() {
   const pendingCount = todayAppts.filter(a => a.status === 'pending').length
   const revenueHoy   = todayAppts
     .filter(a => a.status === 'completed')
-    .reduce((s, a) => s + Number(a.services?.price ?? 0), 0)
+    .reduce((s, a) => s + priceOf(a), 0)
   const weekCount    = weekAppts.length
 
   // Datos para gráficos
@@ -268,7 +323,7 @@ export default function DashboardPage() {
       />
 
       <main className="dash-main">
-        <DashHeader negocio={negocio} pendingCount={pendingCount} theme={theme} onThemeToggle={toggleTheme} onSignOut={handleSignOut} />
+        <DashHeader negocio={negocio} pendingAppts={todayAppts.filter(a => a.status === 'pending')} theme={theme} onThemeToggle={toggleTheme} onSignOut={handleSignOut} />
 
         <div style={{ padding: '28px 32px' }}>
 
@@ -277,7 +332,7 @@ export default function DashboardPage() {
             <>
               <div className="kpi-grid" style={{ marginBottom: 28 }}>
                 <KPICard icon={Calendar}   label="Citas hoy"    value={dataLoading ? '—' : String(todayAppts.length)} delay={0} />
-                <KPICard icon={DollarSign} label="Ingresos hoy" value={dataLoading ? '—' : formatCOP(revenueHoy)} sublabel="completadas" delay={100} />
+                <KPICard icon={DollarSign} label="Ingresos hoy" value={dataLoading ? '—' : formatCurrency(revenueHoy)} sublabel="completadas" delay={100} />
                 <KPICard icon={Clock}      label="Pendientes"   value={dataLoading ? '—' : String(pendingCount)} delay={200} pulse={!dataLoading && pendingCount > 0} />
                 <KPICard icon={TrendingUp} label="Esta semana"  value={dataLoading ? '—' : String(weekCount)} sublabel="citas totales" delay={300} />
               </div>
@@ -286,16 +341,19 @@ export default function DashboardPage() {
                 loading={allCitasLoading}
                 stylists={stylists}
                 negocioName={negocio?.name}
+                businessId={negocio?.id}
                 onLoad={loadAllCitas}
                 onStatusChange={handleStatusChange}
               />
             </>
           ) : activeSection === 'clientes' ? (
-            <ClientesPanel businessId={negocio?.id} />
+            <ClientesPanel businessId={negocio?.id} negocioSlug={negocio?.slug} />
           ) : activeSection === 'estilistas' ? (
             <EstilistasPanel businessId={negocio?.id} />
           ) : activeSection === 'servicios' ? (
             <ServiciosPanel businessId={negocio?.id} />
+          ) : activeSection === 'horarios' ? (
+            <HorariosPanel businessId={negocio?.id} />
           ) : activeSection === 'reportes' ? (
             <GraficosPanel businessId={negocio?.id} />
           ) : activeSection === 'ajustes' ? (
@@ -304,6 +362,9 @@ export default function DashboardPage() {
               onAccentChange={handleAccentChange}
               widgetOrder={widgetOrder}
               onWidgetOrderChange={handleWidgetOrderChange}
+              businessId={negocio?.id}
+              negocio={negocio}
+              session={session}
             />
           ) : (
             /* ── INICIO ─────────────────────────────────────────── */
@@ -362,15 +423,103 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 </div>
+
+                {/* Link para compartir — prominente en móvil */}
+                {negocio?.slug && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      background: '#0D3320',
+                      border: '1px solid rgba(0,255,136,0.2)',
+                      borderRadius: '10px',
+                      padding: '10px 14px',
+                      marginTop: '12px',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      const url = `https://turnott.com/${negocio.slug}`
+                      if (navigator.share) {
+                        navigator.share({ title: negocio.name, url }).catch(() => {})
+                      } else {
+                        navigator.clipboard.writeText(url)
+                      }
+                    }}
+                  >
+                    <Link size={16} color="var(--accent)" />
+                    <span style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 600, flex: 1, fontFamily: 'DM Sans, sans-serif' }}>
+                      turnott.com/{negocio.slug}
+                    </span>
+                    <Share2 size={16} color="#888" />
+                  </div>
+                )}
               </div>
+
+              {/* Onboarding checklist — solo cuando el negocio no tiene servicios ni estilistas */}
+              {!dataLoading && services.length === 0 && stylists.length === 0 && (
+                <div style={{
+                  background: '#0D3320', border: '1px solid rgba(0,255,136,0.2)',
+                  borderRadius: 16, padding: '24px', marginBottom: 20,
+                }}>
+                  <p style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', color: '#F5F5F5', marginBottom: 4 }}>
+                    👋 Bienvenido a TURNOTT
+                  </p>
+                  <p style={{ fontSize: '13px', color: '#888', marginBottom: 20, fontFamily: 'DM Sans, sans-serif' }}>
+                    Completa estos pasos para empezar a recibir citas
+                  </p>
+                  {[
+                    { paso: 1, texto: 'Agrega tus servicios',          hecho: services.length > 0,   accion: () => setActiveSection('servicios') },
+                    { paso: 2, texto: 'Agrega tu equipo',               hecho: stylists.length > 0,   accion: () => setActiveSection('estilistas') },
+                    { paso: 3, texto: 'Configura tus horarios',         hecho: false,                  accion: () => setActiveSection('horarios') },
+                    { paso: 4, texto: 'Comparte tu link con clientes',  hecho: false,                  accion: () => { navigator.clipboard?.writeText(`https://turnott.com/${negocio?.slug}`) } },
+                  ].map(item => (
+                    <div
+                      key={item.paso}
+                      onClick={item.accion}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: 12, marginBottom: 8, cursor: 'pointer',
+                        background: item.hecho ? '#0a1a0f' : '#111',
+                        border: `1px solid ${item.hecho ? 'rgba(0,255,136,0.3)' : '#1E1E1E'}`,
+                        borderRadius: 10,
+                      }}
+                    >
+                      <div style={{
+                        width: 24, height: 24, borderRadius: '50%',
+                        background: item.hecho ? 'var(--accent)' : '#1a1a1a',
+                        border: `1px solid ${item.hecho ? 'var(--accent)' : '#333'}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 12, color: item.hecho ? '#050505' : '#555',
+                        fontWeight: 700, flexShrink: 0, fontFamily: 'DM Sans, sans-serif',
+                      }}>
+                        {item.hecho ? '✓' : item.paso}
+                      </div>
+                      <span style={{
+                        fontSize: 14, fontFamily: 'DM Sans, sans-serif',
+                        color: item.hecho ? '#555' : '#F5F5F5',
+                        textDecoration: item.hecho ? 'line-through' : 'none',
+                      }}>
+                        {item.texto}
+                      </span>
+                      {!item.hecho && (
+                        <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--accent)' }}>→</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* KPI Cards */}
               <div className="kpi-grid" style={{ marginBottom: 24 }}>
                 <KPICard icon={Calendar}   label="Citas hoy"    value={dataLoading ? '—' : String(todayAppts.length)} delay={0} />
-                <KPICard icon={DollarSign} label="Ingresos hoy" value={dataLoading ? '—' : formatCOP(revenueHoy)} sublabel="completadas" delay={80} />
+                <KPICard icon={DollarSign} label="Ingresos hoy" value={dataLoading ? '—' : formatCurrency(revenueHoy)} sublabel="completadas" delay={80} />
                 <KPICard icon={Clock}      label="Pendientes"   value={dataLoading ? '—' : String(pendingCount)} delay={160} pulse={!dataLoading && pendingCount > 0} />
                 <KPICard icon={TrendingUp} label="Esta semana"  value={dataLoading ? '—' : String(weekCount)} sublabel="citas totales" delay={240} />
               </div>
+
+              {/* Reporte semanal */}
+              <ReporteSemanal businessId={negocio?.id} />
 
               {/* Agenda + Semana */}
               <div className="dash-content-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20, alignItems: 'start' }}>
@@ -379,6 +528,10 @@ export default function DashboardPage() {
                   loading={dataLoading}
                   negocioName={negocio?.name}
                   onStatusChange={handleStatusChange}
+                  stylists={stylists}
+                  services={services}
+                  businessId={negocio?.id}
+                  onAddWalkin={handleAddWalkin}
                 />
                 <SemanaResumen
                   weekAppointments={weekAppts}
@@ -390,6 +543,101 @@ export default function DashboardPage() {
           )}
         </div>
       </main>
+
+      {/* Overlay del drawer */}
+      <div
+        className={`dash-more-drawer-overlay ${drawerAbierto ? 'open' : ''}`}
+        onClick={() => setDrawerAbierto(false)}
+      />
+
+      {/* Drawer de opciones adicionales */}
+      <div className={`dash-more-drawer ${drawerAbierto ? 'open' : ''}`}>
+        <p style={{ fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px', fontWeight: 600, fontFamily: 'DM Sans, sans-serif' }}>
+          Más opciones
+        </p>
+        <div className="dash-more-grid">
+          <button
+            className={`dash-more-item ${activeSection === 'servicios' ? 'active' : ''}`}
+            onClick={() => { setActiveSection('servicios'); setDrawerAbierto(false) }}
+          >
+            <Scissors size={20} />
+            <span>Servicios</span>
+          </button>
+          <button
+            className={`dash-more-item ${activeSection === 'horarios' ? 'active' : ''}`}
+            onClick={() => { setActiveSection('horarios'); setDrawerAbierto(false) }}
+          >
+            <Clock size={20} />
+            <span>Horarios</span>
+          </button>
+          <button
+            className={`dash-more-item ${activeSection === 'reportes' ? 'active' : ''}`}
+            onClick={() => { setActiveSection('reportes'); setDrawerAbierto(false) }}
+          >
+            <BarChart2 size={20} />
+            <span>Reportes</span>
+          </button>
+          <button
+            className={`dash-more-item ${activeSection === 'ajustes' ? 'active' : ''}`}
+            onClick={() => { setActiveSection('ajustes'); setDrawerAbierto(false) }}
+          >
+            <Settings size={20} />
+            <span>Ajustes</span>
+          </button>
+        </div>
+
+        <button
+          onClick={handleSignOut}
+          style={{
+            marginTop: 16, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            background: 'rgba(255,77,77,0.07)', border: '1px solid rgba(255,77,77,0.2)',
+            borderRadius: 10, padding: '12px', cursor: 'pointer',
+            color: '#FF4D4D', fontSize: '0.85rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 600,
+          }}
+        >
+          <LogOut size={16} />
+          Cerrar sesión
+        </button>
+      </div>
+
+      {/* Bottom Navigation — solo visible en móvil via CSS */}
+      <nav className="dash-bottom-nav">
+        <button
+          className={activeSection === 'inicio' ? 'active' : ''}
+          onClick={() => { setActiveSection('inicio'); setDrawerAbierto(false) }}
+        >
+          <Home size={22} />
+          <span>Inicio</span>
+        </button>
+        <button
+          className={activeSection === 'citas' ? 'active' : ''}
+          onClick={() => { setActiveSection('citas'); setDrawerAbierto(false) }}
+        >
+          <Calendar size={22} />
+          <span>Citas</span>
+        </button>
+        <button
+          className={activeSection === 'clientes' ? 'active' : ''}
+          onClick={() => { setActiveSection('clientes'); setDrawerAbierto(false) }}
+        >
+          <Users size={22} />
+          <span>Clientes</span>
+        </button>
+        <button
+          className={activeSection === 'estilistas' ? 'active' : ''}
+          onClick={() => { setActiveSection('estilistas'); setDrawerAbierto(false) }}
+        >
+          <User size={22} />
+          <span>Equipo</span>
+        </button>
+        <button
+          className={drawerAbierto ? 'active' : ''}
+          onClick={() => setDrawerAbierto(v => !v)}
+        >
+          <Menu size={22} />
+          <span>Más</span>
+        </button>
+      </nav>
     </div>
   )
 }

@@ -31,18 +31,49 @@ export function relativeTime(date) {
 }
 
 // ── Chime ─────────────────────────────────────────────────────────────────────
+// AudioContext compartido + desbloqueo en el primer gesto del usuario
+// (Chrome/Safari bloquean audio hasta que haya interacción).
 
-function playChime() {
+let _audioCtx = null
+
+function getAudioCtx() {
+  if (!_audioCtx) {
+    try {
+      _audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+    } catch (_) { return null }
+  }
+  return _audioCtx
+}
+
+if (typeof window !== 'undefined') {
+  const unlock = async () => {
+    const ctx = getAudioCtx()
+    if (!ctx) return
+    if (ctx.state === 'suspended') {
+      try { await ctx.resume() } catch (_) {}
+    }
+  }
+  window.addEventListener('pointerdown', unlock, { passive: true })
+  window.addEventListener('keydown',     unlock, { passive: true })
+  window.addEventListener('touchend',    unlock, { passive: true })
+}
+
+async function playChime() {
+  const ctx = getAudioCtx()
+  if (!ctx) return
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    const now = ctx.currentTime
-    // Tres notas ascendentes: C5 → E5 → G5 (acorde mayor positivo)
-    const notes = [
-      { freq: 523, start: 0,    end: 0.5,  vol: 0.35 },
-      { freq: 659, start: 0.18, end: 0.65, vol: 0.30 },
-      { freq: 784, start: 0.36, end: 0.9,  vol: 0.25 },
-    ]
-    notes.forEach(({ freq, start, end, vol }) => {
+    if (ctx.state !== 'running') await ctx.resume()
+  } catch (_) { return }
+  if (ctx.state !== 'running') return
+
+  const now = ctx.currentTime
+  const notes = [
+    { freq: 523, start: 0,    end: 0.5,  vol: 0.35 },
+    { freq: 659, start: 0.18, end: 0.65, vol: 0.30 },
+    { freq: 784, start: 0.36, end: 0.9,  vol: 0.25 },
+  ]
+  notes.forEach(({ freq, start, end, vol }) => {
+    try {
       const osc = ctx.createOscillator()
       const g   = ctx.createGain()
       osc.type = 'sine'
@@ -54,8 +85,8 @@ function playChime() {
       g.connect(ctx.destination)
       osc.start(now + start)
       osc.stop(now + end)
-    })
-  } catch (_) {}
+    } catch (_) {}
+  })
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
@@ -65,6 +96,12 @@ let _id = 0
 export function useNotifications(businessId) {
   const [items,   setItems]   = useState([])
   const channelRef             = useRef(null)
+
+  // Limpiar notificaciones viejas (> 30 min) al montar
+  useEffect(() => {
+    const treintaMinutosAtras = Date.now() - 30 * 60 * 1000
+    setItems(prev => prev.filter(n => n.ts.getTime() > treintaMinutosAtras))
+  }, [])
 
   useEffect(() => {
     if (!businessId) return
@@ -100,11 +137,17 @@ export function useNotifications(businessId) {
         setItems(prev => [notif, ...prev].slice(0, 20))
         playChime()
       })
-      .subscribe()
+      .subscribe((status, err) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('[useNotifications] subscribe status:', status, err)
+        }
+      })
 
     return () => {
-      supabase.removeChannel(channelRef.current)
-      channelRef.current = null
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
     }
   }, [businessId])
 
@@ -114,5 +157,6 @@ export function useNotifications(businessId) {
     markAllRead:   ()  => setItems(p => p.map(n => ({ ...n, read: true }))),
     markRead:      (id) => setItems(p => p.map(n => n.id === id ? { ...n, read: true } : n)),
     dismissToast:  (id) => setItems(p => p.map(n => n.id === id ? { ...n, toast: false } : n)),
+    clearAll:      ()  => setItems([]),
   }
 }
