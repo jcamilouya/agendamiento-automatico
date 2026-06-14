@@ -27,7 +27,7 @@ function IconoCategoria({ categoria }) {
   )
 }
 
-export default function PasoServicio({ servicios, onSeleccionar }) {
+export default function PasoServicio({ servicios, onSeleccionar, hidePrice = false }) {
   return (
     <div>
       <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '1.6rem', color: '#F5F5F5', marginBottom: '4px' }}>
@@ -81,7 +81,7 @@ export default function PasoServicio({ servicios, onSeleccionar }) {
                 </p>
               )}
 
-              {/* Fila inferior: duración + precio */}
+              {/* Fila inferior: duración + precio (precio oculto para agencias) */}
               <div style={{
                 display: 'flex', alignItems: 'center',
                 justifyContent: 'space-between',
@@ -91,9 +91,11 @@ export default function PasoServicio({ servicios, onSeleccionar }) {
                   <Clock size={13} />
                   <span>{srv.duration_minutes} min</span>
                 </div>
-                <span style={{ color: 'var(--accent)', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'Syne, sans-serif' }}>
-                  ${Number(srv.price).toLocaleString('es-CO')}
-                </span>
+                {!hidePrice && (
+                  <span style={{ color: 'var(--accent)', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'Syne, sans-serif' }}>
+                    ${Number(srv.price).toLocaleString('es-CO')}
+                  </span>
+                )}
               </div>
             </button>
           )

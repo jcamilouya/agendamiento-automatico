@@ -723,7 +723,9 @@ body {
 /* â”€â”€ Servicios tabla â”€â”€ */
 .servicios-table-row {
   display: grid;
-  grid-template-columns: 1fr 120px 80px 100px 90px auto;
+  /* Última columna fija (acciones): el header tiene celda vacía y las filas
+     tienen botones; un ancho fijo idéntico mantiene encabezados y datos alineados. */
+  grid-template-columns: 1fr 120px 80px 100px 90px 176px;
   gap: 12px;
   padding: 12px 20px;
   align-items: center;

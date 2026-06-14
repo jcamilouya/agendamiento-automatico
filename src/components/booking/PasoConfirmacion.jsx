@@ -29,12 +29,12 @@ function descargarCalendario({ negocioName, negocioPhone, clientName, fecha, hor
   const dtEnd     = toICSDate(fecha, horaFin)
   const uid       = `turno-${fecha}-${hora.replace(':','')}-${Date.now()}@turno.co`
   const waNum     = negocioPhone ? normalizePhone(negocioPhone).replace('+', '') : ''
-  const waMsgConfirm = encodeURIComponent(`Hola! Confirmo mi cita de ${servicio} el ${fecha} a las ${formatHora(hora)} con ${estilista}. ¡Ahí estaré!`)
+  const waMsgConfirm = encodeURIComponent(`Hola! Confirmo mi cita de ${servicio} el ${fecha} a las ${formatHora(hora)}${estilista ? ` con ${estilista}` : ''}. ¡Ahí estaré!`)
   const waUrl     = waNum ? `https://wa.me/${waNum}?text=${waMsgConfirm}` : ''
   const descripcion = [
     `Cita en ${negocioName}`,
     `Servicio: ${servicio}`,
-    `Estilista: ${estilista}`,
+    estilista ? `Con: ${estilista}` : '',
     waUrl ? `\\n¿Confirmas? Escríbenos: ${waUrl}` : '',
   ].filter(Boolean).join('\\n')
 
@@ -68,6 +68,8 @@ function descargarCalendario({ negocioName, negocioPhone, clientName, fecha, hor
 
 export default function PasoConfirmacion({ seleccion, negocio, onReiniciar }) {
   const { servicio, estilista, fecha, hora, nombre, telefono, promo, finalPrice } = seleccion
+  const isAgency = negocio?.business_type === 'marketing_agency'
+  const estilistaNombre = isAgency ? null : estilista?.name
   const d = new Date(fecha + 'T12:00:00')
   const fechaLinda = `${DIAS_NOMBRE[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`
   const primerNombre = nombre ? nombre.split(' ')[0] : ''
@@ -82,7 +84,7 @@ export default function PasoConfirmacion({ seleccion, negocio, onReiniciar }) {
       negocioName: negocio.name,
       fecha, hora,
       servicio:    servicio.name,
-      estilista:   estilista.name,
+      estilista:   estilistaNombre,
     })
   ) : null
 
@@ -93,7 +95,7 @@ export default function PasoConfirmacion({ seleccion, negocio, onReiniciar }) {
       clientName:   nombre,
       fecha, hora,
       servicio:     servicio.name,
-      estilista:    estilista.name,
+      estilista:    estilistaNombre,
       duracion:     servicio.duration_minutes,
     })
   }
@@ -128,7 +130,7 @@ export default function PasoConfirmacion({ seleccion, negocio, onReiniciar }) {
 
           {[
             { lbl: 'Servicio', val: servicio.name },
-            { lbl: 'Estilista', val: estilista.name },
+            ...(estilistaNombre ? [{ lbl: 'Estilista', val: estilistaNombre }] : []),
           ].map(({ lbl, val }) => (
             <div key={lbl} style={{ marginBottom: '10px' }}>
               <p style={{ color: '#555555', fontSize: '0.72rem', marginBottom: '2px' }}>{lbl}</p>

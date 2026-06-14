@@ -11,7 +11,7 @@ import PasoFormulario from '../components/booking/PasoFormulario'
 import PasoConfirmacion from '../components/booking/PasoConfirmacion'
 import WhatsAppFloat from '../components/WhatsAppFloat'
 
-const ETIQUETAS = ['Servicio', 'Estilista', 'Fecha y hora', 'Tus datos']
+const STEP_LABELS = { servicio: 'Servicio', estilista: 'Estilista', fecha: 'Fecha y hora', datos: 'Tus datos' }
 
 function ErrorScreen({ mensaje = 'Algo salió mal', onReintentar }) {
   return (
@@ -102,6 +102,16 @@ export default function BookingPage() {
       if (e3) throw e3
       setEstilistas(ests)
 
+      // Agencia de marketing: pre-selecciona lo que el flujo va a saltar
+      // (creator siempre; servicio solo si hay uno) para no pedírselo al cliente.
+      const isAgency = neg.business_type === 'marketing_agency'
+      if (isAgency) {
+        const pre = {}
+        if (srvs.length === 1) pre.servicio = srvs[0]
+        if (ests.length > 0) pre.estilista = ests[0]
+        if (pre.servicio || pre.estilista) setSeleccion(p => ({ ...p, ...pre }))
+      }
+
       const { data: promos } = await supabase
         .from('promotions').select('*')
         .eq('business_id', neg.id).eq('is_active', true)
@@ -163,13 +173,18 @@ export default function BookingPage() {
 
       const cancelUrl = columnMissing ? null : `${window.location.origin}/cancelar/${cancelToken}`
 
+      // Para agencias el creator se asigna solo; mostrar "con Creator" no aporta,
+      // así que se omite el nombre del staff en los mensajes.
+      const isAgency = negocio.business_type === 'marketing_agency'
+      const estilistaNombre = isAgency ? null : estilista?.name
+
       // Confirmación al cliente — fire-and-forget
       sendWhatsApp(normalizePhone(telefono), msgConfirmacion({
         clientName:  nombre,
         negocioName: negocio.name,
         fecha, hora,
         servicio:    servicio.name,
-        estilista:   estilista.name,
+        estilista:   estilistaNombre,
         cancelUrl,
       }))
 
@@ -180,13 +195,13 @@ export default function BookingPage() {
           clientPhone: telefono,
           fecha, hora,
           servicio:    servicio.name,
-          estilista:   estilista.name,
-          precio:      servicio.price,
+          estilista:   estilistaNombre,
+          precio:      isAgency ? null : servicio.price,
         }))
       }
 
       setSeleccion(prev => ({ ...prev, nombre, telefono, promo, finalPrice }))
-      setPaso(5)
+      setPaso(p => p + 1)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -195,7 +210,12 @@ export default function BookingPage() {
   }
 
   function reiniciar() {
-    setSeleccion({ servicio: null, estilista: null, fecha: null, hora: null, nombre: '', telefono: '' })
+    const isAgency = negocio?.business_type === 'marketing_agency'
+    setSeleccion({
+      servicio:  isAgency && servicios.length === 1 ? servicios[0] : null,
+      estilista: isAgency && estilistas.length > 0 ? estilistas[0] : null,
+      fecha: null, hora: null, nombre: '', telefono: '',
+    })
     setPaso(1)
   }
 
@@ -233,6 +253,25 @@ export default function BookingPage() {
 
   if (error) return <ErrorScreen onReintentar={() => window.location.reload()} />
 
+  // --- Secuencia de pasos (dinámica por tipo de negocio) ---
+  // Agencia de marketing: se salta "elegir creator" siempre (lo asignamos solo) y
+  // el paso de servicio cuando solo hay uno. Otros negocios mantienen los 4 pasos.
+  const isAgency = negocio?.business_type === 'marketing_agency'
+  const skipCreator = isAgency && estilistas.length > 0
+  const skipServicio = isAgency && servicios.length === 1
+  const staffLabel = BUSINESS_TYPES[negocio?.business_type]?.staffLabel || 'Estilista'
+  const stepKeys = [
+    ...(skipServicio ? [] : ['servicio']),
+    ...(skipCreator ? [] : ['estilista']),
+    'fecha',
+    'datos',
+  ]
+  const etiquetas = stepKeys.map(k => (k === 'estilista' ? staffLabel : STEP_LABELS[k]))
+  const stepActual = stepKeys[paso - 1]
+  const esConfirmacion = paso > stepKeys.length
+  const avanzar = () => setPaso(p => p + 1)
+  const volver = () => setPaso(p => Math.max(1, p - 1))
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0A0A0A', fontFamily: 'DM Sans, sans-serif' }}>
       {/* Header */}
@@ -247,11 +286,11 @@ export default function BookingPage() {
         </div>
       </div>
 
-      {/* Barra de progreso pasos 1-4 */}
-      {paso < 5 && (
+      {/* Barra de progreso */}
+      {!esConfirmacion && (
         <div className="turno-container" style={{ paddingTop: '20px' }}>
           <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
-            {ETIQUETAS.map((_, i) => (
+            {etiquetas.map((_, i) => (
               <div key={i} style={{
                 flex: 1, height: '3px', borderRadius: '999px',
                 background: i + 1 <= paso ? 'var(--accent)' : '#1E1E1E',
@@ -260,7 +299,7 @@ export default function BookingPage() {
             ))}
           </div>
           <p style={{ color: '#888888', fontSize: '0.75rem' }}>
-            Paso {paso} de {ETIQUETAS.length} — {ETIQUETAS[paso - 1]}
+            Paso {paso} de {etiquetas.length} — {etiquetas[paso - 1]}
           </p>
         </div>
       )}
@@ -269,48 +308,49 @@ export default function BookingPage() {
 
       {/* Contenido */}
       <div className="turno-container" style={{ paddingTop: '24px', paddingBottom: '48px' }}>
-        {paso === 1 && (
-          <div className="paso-animado" key="p1">
+        {stepActual === 'servicio' && (
+          <div className="paso-animado" key="servicio">
             <PasoServicio
               servicios={servicios}
-              onSeleccionar={(srv) => { setSeleccion(p => ({ ...p, servicio: srv })); setPaso(2) }}
+              hidePrice={isAgency}
+              onSeleccionar={(srv) => { setSeleccion(p => ({ ...p, servicio: srv })); avanzar() }}
             />
           </div>
         )}
-        {paso === 2 && (
-          <div className="paso-animado" key="p2">
+        {stepActual === 'estilista' && (
+          <div className="paso-animado" key="estilista">
             <PasoEstilista
               estilistas={estilistas}
-              staffLabel={BUSINESS_TYPES[negocio?.business_type]?.staffLabel || 'profesional'}
-              onSeleccionar={(est) => { setSeleccion(p => ({ ...p, estilista: est })); setPaso(3) }}
-              onVolver={() => setPaso(1)}
+              staffLabel={staffLabel}
+              onSeleccionar={(est) => { setSeleccion(p => ({ ...p, estilista: est })); avanzar() }}
+              onVolver={volver}
             />
           </div>
         )}
-        {paso === 3 && (
-          <div className="paso-animado" key="p3">
+        {stepActual === 'fecha' && (
+          <div className="paso-animado" key="fecha">
             <PasoFechaHora
               seleccion={seleccion}
               promociones={promociones}
               businessId={negocio?.id}
-              onSeleccionar={(fecha, hora) => { setSeleccion(p => ({ ...p, fecha, hora })); setPaso(4) }}
-              onVolver={() => setPaso(2)}
+              onSeleccionar={(fecha, hora) => { setSeleccion(p => ({ ...p, fecha, hora })); avanzar() }}
+              onVolver={volver}
             />
           </div>
         )}
-        {paso === 4 && (
-          <div className="paso-animado" key="p4">
+        {stepActual === 'datos' && (
+          <div className="paso-animado" key="datos">
             <PasoFormulario
               seleccion={seleccion}
               guardando={guardando}
               onConfirmar={confirmarCita}
-              onVolver={() => setPaso(3)}
+              onVolver={volver}
               businessId={negocio?.id}
             />
           </div>
         )}
-        {paso === 5 && (
-          <div className="paso-animado" key="p5">
+        {esConfirmacion && (
+          <div className="paso-animado" key="confirmacion">
             <PasoConfirmacion
               seleccion={seleccion}
               negocio={negocio}

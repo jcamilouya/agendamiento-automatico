@@ -30,55 +30,79 @@ export function whatsAppLink(phone, message) {
   return `https://wa.me/${num}?text=${encodeURIComponent(message)}`;
 }
 
+// ── Helpers de formato (mensajes claros, sin fechas/horas crudas tipo "2026-06-10" / "13:00:00") ──
+const MESES_WA = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+function fechaLinda(fecha) {
+  if (!fecha) return '';
+  const [y, m, d] = String(fecha).split('-').map(Number);
+  if (!y || !m || !d) return String(fecha);
+  return `${d} de ${MESES_WA[m - 1]}`;
+}
+
+function horaLinda(hora) {
+  if (!hora) return '';
+  const [h, mi] = String(hora).split(':').map(Number);
+  if (Number.isNaN(h)) return String(hora);
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(mi || 0).padStart(2, '0')} ${ampm}`;
+}
+
+// "con {estilista}" solo cuando hay un nombre real (las agencias no muestran staff)
+const conStaff = (estilista) => (estilista ? ` con ${estilista}` : '');
+const primerNombre = (n) => (n ? String(n).split(' ')[0] : '');
+
 export const msgConfirmacion = ({ clientName, negocioName, fecha, hora, servicio, estilista, cancelUrl }) => {
-  const nombre = clientName.split(' ')[0];
+  const nombre = primerNombre(clientName);
   const lines = [
-    `✅ *¡Cita confirmada, ${nombre}!*`,
+    `✅ *¡Cita confirmada${nombre ? `, ${nombre}` : ''}!*`,
     ``,
-    `Tu cita en *${negocioName}* está lista.`,
+    `Tu reserva en *${negocioName}* quedó lista:`,
     ``,
-    `💇 *${servicio}* con ${estilista}`,
-    `📅 ${fecha}`,
-    `🕐 ${hora}`,
+    `📅 ${fechaLinda(fecha)}`,
+    `🕐 ${horaLinda(hora)}`,
+    `📌 ${servicio}${conStaff(estilista)}`,
   ];
   if (cancelUrl) {
-    lines.push(``, `❌ ¿Necesitas cancelar?`, `👉 ${cancelUrl}`);
+    lines.push(``, `¿Necesitas cancelar o reprogramar?`, `👉 ${cancelUrl}`);
   }
-  lines.push(``, `_¡Te esperamos!_`);
+  lines.push(``, `¡Te esperamos!`);
   return lines.join('\n');
 };
 
 export const msgNuevaCita = ({ clientName, clientPhone, fecha, hora, servicio, estilista, precio }) => [
   `🔔 *Nueva cita agendada*`,
   ``,
-  `👤 ${clientName}`,
-  `📱 ${clientPhone}`,
-  `📅 ${fecha} a las ${hora}`,
-  `✂️ ${servicio} con ${estilista}`,
+  `${clientName} · ${clientPhone}`,
+  `📅 ${fechaLinda(fecha)}`,
+  `🕐 ${horaLinda(hora)}`,
+  `📌 ${servicio}${conStaff(estilista)}`,
   precio ? `💰 $${Number(precio).toLocaleString('es-CO')}` : '',
 ].filter(Boolean).join('\n');
 
 export const msgCancelacion = (nombre, servicio, fecha, hora, slug) =>
   `❌ *Cita cancelada*\n\n` +
-  `Hola ${nombre}, tu cita de *${servicio}* el ${fecha} a las ${hora} fue cancelada.\n\n` +
-  `Para agendar de nuevo 👉 turnott.com/${slug}`;
+  `Hola ${primerNombre(nombre)}, tu cita de *${servicio}* del ${fechaLinda(fecha)} a las ${horaLinda(hora)} quedó cancelada.\n\n` +
+  `¿Quieres agendar de nuevo?\n👉 turnott.com/${slug}`;
 
 export const msgCancelacionDueno = (nombre, servicio, fecha, hora) =>
   `⚠️ *Cita cancelada*\n\n` +
   `*${nombre}* canceló *${servicio}*\n` +
-  `📅 ${fecha} a las ${hora}\n\nEl slot quedó libre.`;
+  `📅 ${fechaLinda(fecha)} · 🕐 ${horaLinda(hora)}\n\n` +
+  `El horario quedó libre de nuevo.`;
 
 export const msgRecordatorio = ({ clientName, negocioName, fecha, hora, servicio, estilista }) => {
-  const nombre = clientName.split(' ')[0];
+  const nombre = primerNombre(clientName);
   return [
-    `Hola ${nombre} 👋`,
+    `⏰ *Recordatorio de tu cita*`,
     ``,
-    `Te recordamos tu cita mañana en *${negocioName}*:`,
+    `Hola ${nombre}, te recordamos tu cita en *${negocioName}*:`,
     ``,
-    `📅 ${fecha}`,
-    `🕐 ${hora}`,
-    `✂️ ${servicio} con ${estilista}`,
+    `📅 ${fechaLinda(fecha)}`,
+    `🕐 ${horaLinda(hora)}`,
+    `📌 ${servicio}${conStaff(estilista)}`,
     ``,
-    `¿Todo bien? Si necesitas cancelar o cambiar la hora, solo dinos 🙌`,
+    `¿Todo bien? Si necesitas cancelar o cambiar la hora, escríbenos. ¡Te esperamos!`,
   ].join('\n');
 };
